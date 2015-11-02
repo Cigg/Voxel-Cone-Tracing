@@ -1,10 +1,10 @@
 # Voxel Cone Tracing
-Interactive Indirect Illumination Using Voxel Cone Tracing.
+Interactive Indirect Illumination Using Voxel Cone Tracing based on [this article](https://www.google.com)
 
 Project in TSBK03 - Advanced Game Programming, at Linköping University.
 
-Project members:
-Oscar Westberg
+Project members:  
+Oscar Westberg  
 Mikael Zackrisson
 
 ## Getting started
