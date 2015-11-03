@@ -1,5 +1,5 @@
 # Voxel Cone Tracing
-Interactive Indirect Illumination Using Voxel Cone Tracing based on [this article](https://www.google.com)
+Interactive Indirect Illumination Using Voxel Cone Tracing based on [this article](https://research.nvidia.com/sites/default/files/publications/GIVoxels-pg2011-authors.pdf)
 
 Project in TSBK03 - Advanced Game Programming, at Linköping University.
 
