@@ -39,4 +39,22 @@ Now generate a project or makefile for your platform
   cd bin
   cmake ..
 ```
-  
+
+## TODO
+1. Setup scene  
+  * Textures  
+  * Bump maps
+2. Voxelize scene  
+  * GPU implementation  
+  * Construct sparse tree  
+  * Render voxels  
+3. Inject lighting  
+  * Create light source  
+  * Depth map from light source  
+  * Render illuminated voxels  
+4. Generate MIP-maps  
+  * Render generated MIP-map  
+5. Render scene from camera  
+  * Cones  
+  * Ambient occlusion  
+  * Indirect illumination  
