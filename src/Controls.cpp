@@ -7,6 +7,7 @@ Controls::Controls(float speed, float mouseSensitivity) {
 	speed_ = speed;
 	mouseSensitivity_ = mouseSensitivity;
 	frameCount_ = 0;
+	oldMousePos_ = glm::dvec2(0.0);
 }
 
 Controls::~Controls() {
@@ -20,8 +21,9 @@ void Controls::updateFromInputs(VCTApplication* app, float deltaTime) {
 
 	glm::dvec2 mousePos;
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
-	glm::dvec2 mouseDelta = mousePos - screenMiddle;
-	glfwSetCursorPos(window, screenMiddle.x, screenMiddle.y);
+	glm::dvec2 mouseDelta = mousePos - oldMousePos_;
+	oldMousePos_ = mousePos;
+	//glfwSetCursorPos(window, screenMiddle.x, screenMiddle.y);
 
 	// Mouse cursor position isn't updated the first four frames.
 	// This is an ugly hack to wait until it is positioned in the middle

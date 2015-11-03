@@ -49,7 +49,7 @@ int main(void) {
     // Create Context and Load OpenGL Functions
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPos(window, width_, height_);
 
     // Initialize GLEW

@@ -18,6 +18,7 @@ protected:
 	float speed_;
 	float mouseSensitivity_;
 
+	glm::dvec2 oldMousePos_;
 	int frameCount_;
 };
 
