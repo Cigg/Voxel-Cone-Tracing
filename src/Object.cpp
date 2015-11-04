@@ -31,7 +31,8 @@ void Object::setScale(float scale) {
 }
 
 void Object::draw(VCTApplication* app) {
-	GLuint shader = material_->useMaterial();
+	GLuint shader = material_->bindMaterial();
+
 	if(shader != 0) {
 		Camera* cam = app->getCamera();
 

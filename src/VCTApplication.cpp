@@ -4,6 +4,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include "Shader.h"
 #include "VCTApplication.h"
 
 VCTApplication::VCTApplication(const int width, const int height, GLFWwindow* window) {
@@ -55,30 +56,47 @@ bool VCTApplication::initialize() {
 	camera_ = new Camera(pos, yaw, pitch, up, 45.0f, 4.0f/3.0f, 0.1f, 1000.0f);
 
 	// Speed, Mouse sensitivity
-	controls_ = new Controls(8.0f, 0.15f);
+	controls_ = new Controls(10.0f, 0.15f);
 
-	Material* mat;
-	Object* obj;
-	Mesh* mesh;
-
-	mat = new Material( "standard.vert", "standard.frag", "standard");
-	materials_.push_back(mat);
+	GLuint standardShader = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
 
 	// Load Crytek Sponza
 	std::cout << "Loading objects..." << std::endl;
 	Assimp::Importer importer;
 	// Read file and store as a "scene"
-	const aiScene* scene = importer.ReadFile("../data/models/crytek-sponza/sponza.obj", aiProcess_Triangulate);
+	std::string crytekPath = "../data/models/crytek-sponza/";
+	const aiScene* scene = importer.ReadFile(crytekPath + "sponza.obj", aiProcess_Triangulate);
 	if(scene) {
-		//std::cout << "mNumMeshes: " << scene->mNumMeshes << std::endl;
-		for(unsigned int i = 0; i < scene->mNumMeshes; i++) {
-			mesh = new Mesh(scene->mMeshes[i]);
-			
+		Material* mat;
+		Object* obj;
+		Mesh* mesh;
+
+		// Create a materials from the loaded assimp materials
+		for(unsigned int m = 0; m < scene->mNumMaterials; m++) {
+			mat = new Material();
+			mat->loadAssimpMaterial(scene->mMaterials[m], crytekPath);
+			// Use standard shader for now
+			mat->setShader(standardShader);
+			materials_[m] = mat;
+		}
+
+		// Create objects and add to objects_ vector. An object has a mesh, a material and some other properties.
+		for(unsigned int m = 0; m < scene->mNumMeshes; m++) {
+			// Create new object
 			obj = new Object();
-			obj->setMaterial(mat);
+
+			// Create a mesh from the loaded assimp mesh
+			mesh = new Mesh();
+			mesh->loadAssimpMesh(scene->mMeshes[m]);
+			// Asign the object this mesh.
 			obj->setMesh(mesh);
+
+			// Store pointer to material used
+			obj->setMaterial(materials_[scene->mMeshes[m]->mMaterialIndex]);
+
 			obj->setScale(0.05f);
 			objects_.push_back(obj);
+
 		}
 	}
 	else {

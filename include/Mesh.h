@@ -10,10 +10,11 @@
 
 class Mesh {
 public:
-	Mesh(const aiMesh* mesh);
+	Mesh();
 	~Mesh();
 
 	void draw();
+	void loadAssimpMesh(const aiMesh* mesh);
 
 protected:
 	GLuint vertexArray_;

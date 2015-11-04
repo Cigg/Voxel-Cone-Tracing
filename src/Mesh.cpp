@@ -2,7 +2,18 @@
 
 #include "Mesh.h"
 
-Mesh::Mesh(const aiMesh* mesh) {
+Mesh::Mesh() {
+	hasTexCoords_ = false;
+	hasNormals_ = false;
+	numIndices_ = 0;
+	materialIndex_ = 0;
+}
+
+Mesh::~Mesh() {
+
+}
+
+void Mesh::loadAssimpMesh(const aiMesh* mesh) {
 	hasTexCoords_ = mesh->HasTextureCoords(0);
 	hasNormals_ = mesh->HasNormals();
 
@@ -24,7 +35,7 @@ Mesh::Mesh(const aiMesh* mesh) {
 		uvs.reserve(mesh->mNumVertices);
 		for(unsigned int i=0; i<mesh->mNumVertices; i++) {
 			aiVector3D uv = mesh->mTextureCoords[0][i];
-			uvs.push_back(glm::vec2(uv.x, uv.y));
+			uvs.push_back(glm::vec2(uv.x, -uv.y));
 		}
 	}
 
@@ -80,10 +91,6 @@ Mesh::Mesh(const aiMesh* mesh) {
 
 	numIndices_ = 3*mesh->mNumFaces;
 	materialIndex_ = mesh->mMaterialIndex;
-}
-
-Mesh::~Mesh() {
-
 }
 
 void Mesh::draw() {

@@ -6,7 +6,10 @@ in vec3 normal_cameraspace;
 
 out vec4 color;
 
+//Uniforms
+uniform sampler2D diffuseTexture;
+
 void main() {
-	
-	color = vec4(normal_cameraspace, 1.0);
+	vec3 diffuseColor = texture(diffuseTexture, UV).rgb;
+	color = vec4(diffuseColor, 1.0);
 }

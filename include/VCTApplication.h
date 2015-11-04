@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <map>
 
 #include "Object.h"
 #include "Material.h"
@@ -32,7 +33,7 @@ protected:
 	GLFWwindow* window_;
 
 	std::vector<Object*> objects_;
-	std::vector<Material*> materials_;
+	std::map<int, Material*> materials_;
 };
 
 #endif // VCTAPPLICATION_H

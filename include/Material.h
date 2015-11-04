@@ -7,17 +7,21 @@
 
 class Material {
 public:
-	Material(const std::string &vert, const std::string &frag, const std::string &name);
+	Material();
 	~Material();
 
-	GLuint useMaterial();	
+	void loadAssimpMaterial(const aiMaterial* material, std::string path);
+	void setShader(GLuint shaderID);
+	GLuint loadTexture(std::string filenameString);
+	GLuint bindMaterial();
 
 
 protected:
-	const std::string shadersLocation_ = "../shaders/";
-
 	std::string name_;
 	GLuint shader_;
+
+	GLuint diffuseTexture_;
+	// more textures
 };
 
 #endif // MATERIAL_H
