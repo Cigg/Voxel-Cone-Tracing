@@ -6,8 +6,8 @@ in vec3 Normal_cam;
 in vec3 Tangent_cam;
 in vec3 Bitangent_cam;
 in vec3 Position_cam;
-in vec3 EyeDirection_tangent;
-in vec3 LightDirection_tangent;
+in vec3 EyeDirection_cam;
+in vec3 LightDirection_cam;
 
 out vec4 color;
 
@@ -48,17 +48,20 @@ void main() {
     float diffX = texture(HeightTexture, UV + vec2(offset.x, 0.0f)).r - curr;
     float diffY = texture(HeightTexture, UV + vec2(0.0f, offset.y)).r - curr;
 
-    // Tangent space normal
+    // Tangent space bump normal
     float bumpMult = -10.0f;
-    vec3 normal_tangent = normalize(vec3(bumpMult*diffX, bumpMult*diffY, 1.0f));
+    vec3 bumpNormal_tangent = normalize(vec3(bumpMult*diffX, bumpMult*diffY, 1.0f));
 
-    float cosTheta = max(0, dot(normal_tangent, LightDirection_tangent));
+    // Camera space bump normal
+    mat3 tangentToCam = inverse(transpose(mat3(Tangent_cam, Bitangent_cam, Normal_cam)));
+    vec3 bumpNormal_cam = normalize(tangentToCam * bumpNormal_tangent); 
+
+    float cosTheta = max(0, dot(bumpNormal_cam, LightDirection_cam));
 
     vec3 ambientLighting = 0.2f * AmbientColor * materialColor.xyz;
     vec3 diffuseReflection = cosTheta * LightColor * materialColor.xyz;
     vec3 specularReflection = LightColor * specularColor.xyz
-    	* pow(max(0.0, dot(reflect(-LightDirection_tangent, normal_tangent), EyeDirection_tangent)), Shininess);
+    	* pow(max(0.0, dot(reflect(-LightDirection_cam, bumpNormal_cam), EyeDirection_cam)), Shininess);
 
 	color = vec4(ambientLighting + diffuseReflection + specularReflection, alpha);
-	//color = vec4(vec3(cosTheta), 1);
 }
