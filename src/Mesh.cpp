@@ -5,6 +5,7 @@
 Mesh::Mesh() {
 	hasTexCoords_ = false;
 	hasNormals_ = false;
+	hasTangentsAndBitangents_ = false;
 	numIndices_ = 0;
 	materialIndex_ = 0;
 }
@@ -16,13 +17,17 @@ Mesh::~Mesh() {
 void Mesh::loadAssimpMesh(const aiMesh* mesh) {
 	hasTexCoords_ = mesh->HasTextureCoords(0);
 	hasNormals_ = mesh->HasNormals();
+	hasTangentsAndBitangents_ = mesh->HasTangentsAndBitangents();
 
 	// std::cout << "   mNumVertices: " << mesh->mNumVertices << std::endl
 	// 		  << "   mNumFaces: " << mesh->mNumFaces << std::endl << std::endl;
 
+	// Load mesh info into glm vectors
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::vec3> tangents;
+	std::vector<glm::vec3> bitangents;
 	std::vector<unsigned int> indices;
 
 	vertices.reserve(mesh->mNumVertices);
@@ -47,6 +52,20 @@ void Mesh::loadAssimpMesh(const aiMesh* mesh) {
 		}
 	}
 
+	if(hasTangentsAndBitangents_) {
+		tangents.reserve(mesh->mNumVertices);
+		for(unsigned int i=0; i<mesh->mNumVertices; i++) {
+			aiVector3D t = mesh->mTangents[i];
+			tangents.push_back(glm::vec3(t.x, t.y, t.z));
+		}
+
+		bitangents.reserve(mesh->mNumVertices);
+		for(unsigned int i=0; i<mesh->mNumVertices; i++) {
+			aiVector3D b = mesh->mBitangents[i];
+			bitangents.push_back(glm::vec3(b.x, b.y, b.z));
+		}
+	}
+
 	indices.reserve(3*mesh->mNumFaces);
 	for (unsigned int i=0; i<mesh->mNumFaces; i++) {
 		indices.push_back(mesh->mFaces[i].mIndices[0]);
@@ -55,7 +74,7 @@ void Mesh::loadAssimpMesh(const aiMesh* mesh) {
 		//std::cout << "mesh->mFaces[i].mNumIndices: " << mesh->mFaces[i].mNumIndices << std::endl;
 		//std::cout << "indices: " << mesh->mFaces[i].mIndices[0] << "," << mesh->mFaces[i].mIndices[1] << "," << mesh->mFaces[i].mIndices[2] << std::endl;
 	}
-	
+
 	// Create VAO
 	glGenVertexArrays(1, &vertexArray_);
 	glBindVertexArray(vertexArray_);
@@ -81,6 +100,17 @@ void Mesh::loadAssimpMesh(const aiMesh* mesh) {
 		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
 	}
 
+	// Tangents and bitangents
+	if(hasTangentsAndBitangents_) {
+		glGenBuffers(1, &vboTangents_);
+		glBindBuffer(GL_ARRAY_BUFFER,vboTangents_);
+		glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(glm::vec3), &tangents[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &vboBitangents_);
+		glBindBuffer(GL_ARRAY_BUFFER,vboBitangents_);
+		glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), &bitangents[0], GL_STATIC_DRAW);
+	}
+
 	// Indices
 	glGenBuffers(1, &vboIndices_);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndices_);
@@ -89,15 +119,17 @@ void Mesh::loadAssimpMesh(const aiMesh* mesh) {
 	// Unbind vertex array
 	glBindVertexArray(0);
 
+	vertices_ = vertices;
+	uvs_ = uvs;
+	normals_ = normals;
+	tangents_ = tangents;
+	bitangents_ = bitangents;
+	indices_ = indices;
 	numIndices_ = 3*mesh->mNumFaces;
 	materialIndex_ = mesh->mMaterialIndex;
 }
 
 void Mesh::draw() {
-	// glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-	// glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-	// glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-
 	// std::cout << "Mesh::draw: " << std::endl <<
 	// 			 "   " << "vertexArray_: " << vertexArray_ << std::endl <<
 	// 			 "   " << "vboVertices_: " << vboVertices_ << std::endl <<
@@ -144,6 +176,30 @@ void Mesh::draw() {
 		(void*)0                          // array buffer offset
 	);
 
+	// 4th attribute buffer : tangents
+	glEnableVertexAttribArray(3);
+	glBindBuffer(GL_ARRAY_BUFFER, vboTangents_);
+	glVertexAttribPointer(
+		3,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
+	// 5th attribute buffer : bitangents
+	glEnableVertexAttribArray(4);
+	glBindBuffer(GL_ARRAY_BUFFER, vboBitangents_);
+	glVertexAttribPointer(
+		4,                                // attribute
+		3,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
 	// Index buffer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndices_);
 
@@ -158,6 +214,9 @@ void Mesh::draw() {
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(3);
+	glDisableVertexAttribArray(4);
 
+	glUseProgram(0);
 	glBindVertexArray(0);
 }

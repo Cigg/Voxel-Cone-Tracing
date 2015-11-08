@@ -26,6 +26,11 @@ public:
 	void update(float deltaTime);
 	void draw();
 
+	// Just one point light for now
+	// Todo: Create light struct or class. Support more lights in shader
+	glm::vec3 lightPosition_ = glm::vec3(70.0f, 160.0f, -20.0f);
+	glm::vec3 lightColor_ = glm::vec3(1.0f);
+
 protected:
 	int width_, height_;
 	Camera* camera_;

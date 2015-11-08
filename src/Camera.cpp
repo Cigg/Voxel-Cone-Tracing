@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "Camera.h"
 
 Camera::Camera(glm::vec3 pos, float yaw, float pitch, glm::vec3 up, float fieldOfView, float aspectRatio, float near, float far) {

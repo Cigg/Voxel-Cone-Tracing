@@ -65,7 +65,9 @@ bool VCTApplication::initialize() {
 	Assimp::Importer importer;
 	// Read file and store as a "scene"
 	std::string crytekPath = "../data/models/crytek-sponza/";
-	const aiScene* scene = importer.ReadFile(crytekPath + "sponza.obj", aiProcess_Triangulate);
+	const aiScene* scene = importer.ReadFile(crytekPath + "sponza.obj", aiProcess_Triangulate |
+		aiProcess_CalcTangentSpace |
+		aiProcess_JoinIdenticalVertices);
 	if(scene) {
 		Material* mat;
 		Object* obj;
@@ -89,10 +91,10 @@ bool VCTApplication::initialize() {
 			mesh = new Mesh();
 			mesh->loadAssimpMesh(scene->mMeshes[m]);
 			// Asign the object this mesh.
-			obj->setMesh(mesh);
+			obj->mesh_ = mesh;
 
 			// Store pointer to material used
-			obj->setMaterial(materials_[scene->mMeshes[m]->mMaterialIndex]);
+			obj->material_ = materials_[scene->mMeshes[m]->mMaterialIndex];
 
 			obj->setScale(0.05f);
 			objects_.push_back(obj);
@@ -104,7 +106,10 @@ bool VCTApplication::initialize() {
 		return false;	
 	}
 
-	std::cout << "Loading done! " << objects_.size() << " number of objects loaded" << std::endl;
+	std::cout << "Loading done! " << objects_.size() << " objects loaded" << std::endl;
+
+	// Sort object so opaque objects are rendered first
+	std::sort(objects_.begin(), objects_.end(), compareObjects);
 
 	return true;
 }

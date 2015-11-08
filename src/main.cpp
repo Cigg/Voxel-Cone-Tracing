@@ -21,6 +21,28 @@ void dumpGLInfo() {
     printf ("GLSL: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
+void dumpGLErrors() {
+    GLenum glError = glGetError();
+    if(glError) {
+        switch (glError) {
+            case GL_INVALID_ENUM:
+                std::cout << "Invalid enum." << std::endl;
+                break;
+
+            case GL_INVALID_VALUE:
+                std::cout << "Invalid value." << std::endl;
+                break;
+
+            case GL_INVALID_OPERATION:
+                std::cout << "Invalid operation." << std::endl;
+
+            default:
+                std::cout << "Unrecognised GLenum." << std::endl;
+                break;
+        }
+    }
+}
+
 int main(void) {
 
     // Load GLFW and create a window
@@ -57,10 +79,13 @@ int main(void) {
     }
     
     dumpGLInfo();
+    dumpGLErrors();
 
     // Initialize other openGL stuff
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS); 
+    glEnable (GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     double previousTime, currentTime;
     previousTime = glfwGetTime();
