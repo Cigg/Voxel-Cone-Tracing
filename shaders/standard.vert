@@ -24,16 +24,18 @@ uniform vec3 LightPosition;
 
 void main() {
 	gl_Position =  ProjectionMatrix * ModelViewMatrix * vec4(vertexPosition_model,1);
+	vec3 position_world = (ModelMatrix * vec4(vertexPosition_model,1)).xyz;
 	Position_cam = (ModelViewMatrix * vec4(vertexPosition_model, 1)).xyz;
 	Normal_cam = normalize((ModelViewMatrix * vec4(vertexNormal_model,0)).xyz);
 	Tangent_cam = normalize((ModelViewMatrix * vec4(vertexTangent_model,0)).xyz);
 	//Bitangent_cam = -normalize(cross(Normal_cam, Tangent_cam));
 	Bitangent_cam = normalize((ModelViewMatrix * vec4(vertexBitangent_model,0)).xyz);
 
-	EyeDirection_cam = normalize(vec3(0,0,0) - Position_cam);
+	EyeDirection_cam = vec3(0,0,0) - Position_cam; // Normalize in fragment shader or else it will be interpolated wrong
 
 	vec3 lightPosition_cam = (ViewMatrix * vec4(LightPosition, 1)).xyz;
-	LightDirection_cam = normalize(lightPosition_cam - Position_cam);
+	//LightDirection_cam = normalize(lightPosition_cam - Position_cam);
+	LightDirection_cam = mat3(ViewMatrix) * normalize(vec3(1, 1, 0)); // Directional light
 
 	UV = vertexUV;
 }

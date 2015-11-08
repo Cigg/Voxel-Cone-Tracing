@@ -49,19 +49,21 @@ void main() {
     float diffY = texture(HeightTexture, UV + vec2(0.0f, offset.y)).r - curr;
 
     // Tangent space bump normal
-    float bumpMult = -10.0f;
+    float bumpMult = -3.0f;
     vec3 bumpNormal_tangent = normalize(vec3(bumpMult*diffX, bumpMult*diffY, 1.0f));
 
-    // Camera space bump normal
+    // Matrix to convert from tangent space to camera space
     mat3 tangentToCam = inverse(transpose(mat3(Tangent_cam, Bitangent_cam, Normal_cam)));
-    vec3 bumpNormal_cam = normalize(tangentToCam * bumpNormal_tangent); 
+    // Camera space normal, light direction and eye direction
+    vec3 N = normalize(tangentToCam * bumpNormal_tangent);
+    vec3 L = normalize(LightDirection_cam);
+    vec3 E = normalize(EyeDirection_cam);
 
-    float cosTheta = max(0, dot(bumpNormal_cam, LightDirection_cam));
+    float cosTheta = max(0, dot(N, L));
 
     vec3 ambientLighting = 0.2f * AmbientColor * materialColor.xyz;
     vec3 diffuseReflection = cosTheta * LightColor * materialColor.xyz;
-    vec3 specularReflection = LightColor * specularColor.xyz
-    	* pow(max(0.0, dot(reflect(-LightDirection_cam, bumpNormal_cam), EyeDirection_cam)), Shininess);
+    vec3 specularReflection = LightColor * specularColor.xyz * pow(max(0.0, dot(reflect(-L, N), E)), Shininess);
 
 	color = vec4(ambientLighting + diffuseReflection + specularReflection, alpha);
 }
