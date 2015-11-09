@@ -20,7 +20,6 @@ uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 uniform mat4 ModelViewMatrix;
 uniform mat4 ProjectionMatrix;
-uniform vec3 LightPosition;
 
 void main() {
 	gl_Position =  ProjectionMatrix * ModelViewMatrix * vec4(vertexPosition_model,1);
@@ -33,7 +32,8 @@ void main() {
 
 	EyeDirection_cam = vec3(0,0,0) - Position_cam; // Normalize in fragment shader or else it will be interpolated wrong
 
-	vec3 lightPosition_cam = (ViewMatrix * vec4(LightPosition, 1)).xyz;
+	vec3 lightPosition = vec3(70.0f, 160.0f, -20.0f);
+	vec3 lightPosition_cam = (ViewMatrix * vec4(lightPosition, 1)).xyz;
 	//LightDirection_cam = normalize(lightPosition_cam - Position_cam);
 	LightDirection_cam = mat3(ViewMatrix) * normalize(vec3(1, 1, 0)); // Directional light
 

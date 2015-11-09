@@ -12,9 +12,9 @@ in vec3 LightDirection_cam;
 out vec4 color;
 
 //Uniforms
-uniform vec3 AmbientColor;
-uniform vec3 DiffuseColor;
-uniform vec3 SpecularColor;
+// uniform vec3 AmbientColor;
+// uniform vec3 DiffuseColor;
+// uniform vec3 SpecularColor;
 
 uniform float Shininess;
 uniform float Opacity;
@@ -29,11 +29,11 @@ uniform vec2 SpecularTextureSize;
 uniform vec2 MaskTextureSize;
 uniform vec2 HeightTextureSize;
 
-uniform vec3 LightColor;
-
 void main() {
 	vec4 materialColor = texture(DiffuseTexture, UV);
 	float alpha = materialColor.a;
+
+	vec3 lightColor = vec3(1.0f);
 	
 	if(materialColor.a < 0.5f) {
 		discard;
@@ -61,9 +61,9 @@ void main() {
 
     float cosTheta = max(0, dot(N, L));
 
-    vec3 ambientLighting = 0.2f * AmbientColor * materialColor.xyz;
-    vec3 diffuseReflection = cosTheta * LightColor * materialColor.xyz;
-    vec3 specularReflection = LightColor * specularColor.xyz * pow(max(0.0, dot(reflect(-L, N), E)), Shininess);
+    vec3 ambientLighting = 0.2f * materialColor.xyz;
+    vec3 diffuseReflection = cosTheta * lightColor * materialColor.xyz;
+    vec3 specularReflection = lightColor * specularColor.xyz * pow(max(0.0, dot(reflect(-L, N), E)), Shininess);
 
 	color = vec4(ambientLighting + diffuseReflection + specularReflection, alpha);
 }

@@ -181,9 +181,9 @@ GLuint Material::bindMaterial() {
 	if(shader_ != 0) {
 		glUseProgram(shader_);
 
-		glUniform3f(glGetUniformLocation(shader_, "AmbientColor"), ambientColor_.r, ambientColor_.g, ambientColor_.b);
-		glUniform3f(glGetUniformLocation(shader_, "DiffuseColor"), diffuseColor_.r, diffuseColor_.g, diffuseColor_.b);
-		glUniform3f(glGetUniformLocation(shader_, "SpecularColor"), specularColor_.r, specularColor_.g, specularColor_.b);
+		// glUniform3f(glGetUniformLocation(shader_, "AmbientColor"), ambientColor_.r, ambientColor_.g, ambientColor_.b);
+		// glUniform3f(glGetUniformLocation(shader_, "DiffuseColor"), diffuseColor_.r, diffuseColor_.g, diffuseColor_.b);
+		// glUniform3f(glGetUniformLocation(shader_, "SpecularColor"), specularColor_.r, specularColor_.g, specularColor_.b);
 		
 		glUniform1f(glGetUniformLocation(shader_, "Shininess"), shininess_);
 		glUniform1f(glGetUniformLocation(shader_, "Opacity"), opacity_);

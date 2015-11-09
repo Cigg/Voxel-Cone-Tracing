@@ -18,7 +18,8 @@ public:
 	bool loadMeshFromFile(const std::string &path);
 	void setPosition(glm::vec3 pos);
 	void setScale(float scale);
-	void draw(VCTApplication* app);
+	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix);
+	void drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLuint shader);
 
 	Mesh* mesh_;
 	Material* material_;

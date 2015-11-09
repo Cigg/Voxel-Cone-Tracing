@@ -59,6 +59,8 @@ bool VCTApplication::initialize() {
 	controls_ = new Controls(10.0f, 0.15f);
 
 	GLuint standardShader = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
+	shadowShader_ = loadShaders("../shaders/shadow.vert", "../shaders/shadow.frag");
+	quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
 
 	// Load Crytek Sponza
 	std::cout << "Loading objects..." << std::endl;
@@ -111,6 +113,43 @@ bool VCTApplication::initialize() {
 	// Sort object so opaque objects are rendered first
 	std::sort(objects_.begin(), objects_.end(), compareObjects);
 
+	// Create framebuffer for shadow map
+	glGenFramebuffers(1, &depthFramebuffer_);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer_);
+
+	// Depth texture
+	glGenTextures(1, &depthTexture_);
+	glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture_, 0);
+	glDrawBuffer(GL_NONE);
+
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "Error creating framebuffer" << std::endl;
+		return false;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// Quad FBO
+	static const GLfloat quad[] = { 
+		-1.0f, -1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f,
+	};
+
+	glGenBuffers(1, &quadVBO_);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+
 	return true;
 }
 
@@ -120,7 +159,39 @@ void VCTApplication::update(float deltaTime) {
 }
 
 void VCTApplication::draw() {
+	// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// glUseProgram(shadowShader_);
+	// glViewport(0,0,1024,1024);
+
+	// glm::mat4 viewMatrix = camera_->getViewMatrix();//glm::lookAt(glm::vec3(0.5f,2,2), glm::vec3(0,0,0), glm::vec3(0,1,0));
+	// glm::mat4 projectionMatrix = glm::ortho<float>(-10, 10, -10, 10, -50, 2000);
+
+	// for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
+	// 	(*obj)->drawSimple(viewMatrix, projectionMatrix, shadowShader_);
+	// }
+
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// // Draw framebuffer to screen
+	// glUseProgram(quadShader_);
+//	glViewport(0,0,1024,768);
+
+	// // Bind our texture in Texture Unit 0
+	// glActiveTexture(GL_TEXTURE0);
+	// glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	// glUniform1i(glGetUniformLocation(quadShader_, "Texture"), 0);
+
+	// glEnableVertexAttribArray(0);
+	// glBindBuffer(GL_ARRAY_BUFFER, quadVBO_);
+	// glVertexAttribPointer(0, 3,	GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	// glDrawArrays(GL_TRIANGLES, 0, 6);
+	// glDisableVertexAttribArray(0);
+
+
+	glm::mat4 viewMatrix = camera_->getViewMatrix();
+	glm::mat4 projectionMatrix = camera_->getProjectionMatrix();
+
 	for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
-		(*obj)->draw(this);
-	}	
+		(*obj)->draw(viewMatrix, projectionMatrix);
+	}
 }
