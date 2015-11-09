@@ -40,6 +40,7 @@ protected:
 	GLuint depthTexture_;
 	GLuint shadowShader_;
 	GLuint quadShader_;
+    GLuint geometryShader_;
 	GLuint quadVBO_;
 };
 

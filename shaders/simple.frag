@@ -11,5 +11,6 @@ uniform sampler2D DiffuseTexture;
 
 void main() {
     vec4 materialColor = texture(DiffuseTexture, frag.UV);
-    color = materialColor;
+    
+    color = length(materialColor) < 0.001 ? vec4(1.0,0.0,0.0,1.0) : materialColor;
 } 
