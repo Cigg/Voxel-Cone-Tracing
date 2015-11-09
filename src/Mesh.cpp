@@ -152,6 +152,8 @@ void Mesh::draw() {
 		(void*)0            // array buffer offset
 	);
 
+	// TODO: dont upload stuff if they aren't in the shader
+	
 	// 2nd attribute buffer : UVs
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords_);
