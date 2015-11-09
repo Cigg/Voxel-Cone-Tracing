@@ -10,6 +10,7 @@
 #include "Material.h"
 #include "Camera.h"
 #include "Controls.h"
+#include "Texture.h"
 #include "VCTApplication.h"
 
 class VCTApplication {
@@ -37,7 +38,7 @@ protected:
 
 	// Stuff for shadow mapping
 	GLuint depthFramebuffer_;
-	GLuint depthTexture_;
+	Texture depthTexture_;
 	GLuint shadowShader_;
 	GLuint quadShader_;
 	GLuint quadVertexArray_;

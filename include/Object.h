@@ -7,6 +7,7 @@
 
 class VCTApplication; // Forward declaration
 
+#include "Texture.h"
 #include "Mesh.h"
 #include "Material.h"
 
@@ -18,7 +19,7 @@ public:
 	bool loadMeshFromFile(const std::string &path);
 	void setPosition(glm::vec3 pos);
 	void setScale(float scale);
-	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix);
+	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, glm::mat4 &depthModelViewProjectionMatrix, Texture depthTexture);
 	void drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLuint shader);
 
 	Mesh* mesh_;

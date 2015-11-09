@@ -15,14 +15,18 @@ out vec3 LightDirection_tangent;
 out vec3 EyeDirection_tangent;
 out vec3 LightDirection_cam;
 out vec3 EyeDirection_cam;
+out vec4 Position_depth;
 
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 uniform mat4 ModelViewMatrix;
 uniform mat4 ProjectionMatrix;
+uniform mat4 DepthModelViewProjectionMatrix;
 
 void main() {
 	gl_Position =  ProjectionMatrix * ModelViewMatrix * vec4(vertexPosition_model,1);
+	Position_depth = DepthModelViewProjectionMatrix * vec4(vertexPosition_model, 1);
+	Position_depth.xyz = Position_depth.xyz * 0.5f + 0.5f;
 	vec3 position_world = (ModelMatrix * vec4(vertexPosition_model,1)).xyz;
 	Position_cam = (ModelViewMatrix * vec4(vertexPosition_model, 1)).xyz;
 	Normal_cam = normalize((ModelViewMatrix * vec4(vertexNormal_model,0)).xyz);

@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "Texture.h"
+
 class Material {
 public:
 	enum TEXTURES_TYPES {
@@ -14,11 +16,6 @@ public:
 		MASK_TEXTURE,
 		HEIGHT_TEXTURE,
 		NUM_TEXTURES
-	};
-
-	struct Texture {
-		GLuint textureID;
-		int width, height, componentsPerPixel;
 	};
 
 	Material();

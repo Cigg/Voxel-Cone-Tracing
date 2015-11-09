@@ -118,9 +118,10 @@ bool VCTApplication::initialize() {
 	glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer_);
 
 	// Depth texture
-	glGenTextures(1, &depthTexture_);
-	glBindTexture(GL_TEXTURE_2D, depthTexture_);
-	glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	depthTexture_.width = depthTexture_.height = 1024;
+	glGenTextures(1, &depthTexture_.textureID);
+	glBindTexture(GL_TEXTURE_2D, depthTexture_.textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, depthTexture_.width, depthTexture_.height, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -128,7 +129,7 @@ bool VCTApplication::initialize() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 		 
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture_, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture_.textureID, 0);
 	// No color output
 	glDrawBuffer(GL_NONE);
 
@@ -177,8 +178,9 @@ void VCTApplication::draw() {
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 viewMatrix = glm::lookAt(-glm::vec3(0.4, -0.9, 0.2), glm::vec3(0,0,0), glm::vec3(0,1,0));
+	glm::mat4 viewMatrix = glm::lookAt(-glm::vec3(0.3, -0.9, 0.1), glm::vec3(0,0,0), glm::vec3(0,1,0));
 	glm::mat4 projectionMatrix = glm::ortho<float>(-120, 120, -120, 120, -500, 500);
+	glm::mat4 depthViewProjectionMatrix = projectionMatrix * viewMatrix;
 
 	for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
 		(*obj)->drawSimple(viewMatrix, projectionMatrix, shadowShader_);
@@ -198,7 +200,7 @@ void VCTApplication::draw() {
 
 	for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
 		//(*obj)->drawSimple(viewMatrix, projectionMatrix, shadowShader_);
-		(*obj)->draw(viewMatrix, projectionMatrix);
+		(*obj)->draw(viewMatrix, projectionMatrix, depthViewProjectionMatrix, depthTexture_);
 	}
 
 	// ------------------------------------------------------------------- // 
@@ -210,7 +212,7 @@ void VCTApplication::draw() {
 	glUseProgram(quadShader_);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, depthTexture_);
+	glBindTexture(GL_TEXTURE_2D, depthTexture_.textureID);
 	glUniform1i(glGetUniformLocation(quadShader_, "Texture"), 0);
 
 	glBindVertexArray(quadVertexArray_);

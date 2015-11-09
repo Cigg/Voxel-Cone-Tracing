@@ -8,6 +8,7 @@ in vec3 Bitangent_cam;
 in vec3 Position_cam;
 in vec3 EyeDirection_cam;
 in vec3 LightDirection_cam;
+in vec4 Position_depth; // Position from the shadow map point of view
 
 out vec4 color;
 
@@ -62,9 +63,11 @@ void main() {
 
     float cosTheta = max(0, dot(N, L));
 
+    float visibility = texture(ShadowMap, vec3(Position_depth.xy, (Position_depth.z - 0.0001)/Position_depth.w));
+    
     vec3 ambientLighting = 0.2f * materialColor.xyz;
-    vec3 diffuseReflection = cosTheta * lightColor * materialColor.xyz;
-    vec3 specularReflection = lightColor * specularColor.xyz * pow(max(0.0, dot(reflect(-L, N), E)), Shininess);
+    vec3 diffuseReflection = visibility * cosTheta * lightColor * materialColor.xyz;
+    vec3 specularReflection = visibility * lightColor * specularColor.xyz * pow(max(0.0, dot(reflect(-L, N), E)), Shininess);
 
 	color = vec4(ambientLighting + diffuseReflection + specularReflection, alpha);
 }

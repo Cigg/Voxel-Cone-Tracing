@@ -88,7 +88,7 @@ void Material::loadAssimpMaterial(const aiMaterial* mat, std::string path) {
 	}
 }
 
-Material::Texture Material::loadTexture(std::string filenameString) {
+Texture Material::loadTexture(std::string filenameString) {
 	Texture tex;
 
     const char* filename = filenameString.c_str();
