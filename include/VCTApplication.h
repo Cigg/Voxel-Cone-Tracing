@@ -41,6 +41,7 @@ protected:
 	GLuint shadowShader_;
 	GLuint quadShader_;
     GLuint geometryShader_;
+	GLuint quadVertexArray_;
 	GLuint quadVBO_;
 };
 
