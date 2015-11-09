@@ -4,5 +4,6 @@
 #include <GL/glew.h>
 
 GLuint loadShaders(const char* vert, const char* frag);
+GLuint loadShaders(const char* vert, const char* frag, const char* geom);
 
 #endif
