@@ -57,10 +57,11 @@ bool VCTApplication::initialize() {
 
 	// Speed, Mouse sensitivity
 	controls_ = new Controls(10.0f, 0.15f);
-
-	GLuint standardShader = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
-	shadowShader_ = loadShaders("../shaders/shadow.vert", "../shaders/shadow.frag");
-	quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
+    
+    GLuint standardShader = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
+    geometryShader_ = loadShaders("../shaders/simple.vert", "../shaders/simple.frag", "../shaders/simple.geom");
+    shadowShader_ = loadShaders("../shaders/shadow.vert", "../shaders/shadow.frag");
+    quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
 
 	// Load Crytek Sponza
 	std::cout << "Loading objects..." << std::endl;
