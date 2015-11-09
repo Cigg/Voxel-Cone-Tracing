@@ -168,11 +168,8 @@ void VCTApplication::draw() {
 	// ------------------------------------------------------------------- // 
 	// --------------------- Draw depth to texture ----------------------- //
 	// ------------------------------------------------------------------- // 
+	// Draw to depth frame buffer instead of screen
 	glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer_);
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cout << "Error creating framebuffer" << std::endl;
-	}
-
 	// Set viewport of framebuffer size
 	glViewport(0,0,1024,1024);
     // Set clear color and clear
@@ -190,6 +187,7 @@ void VCTApplication::draw() {
 	// ------------------------------------------------------------------- // 
 	// --------------------- Draw the scene normally --------------------- //
 	// ------------------------------------------------------------------- // 
+	// Draw to the screen
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, width_, height_);
 	// Set clear color and clear
