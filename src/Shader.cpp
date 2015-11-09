@@ -13,7 +13,6 @@
 // Also load a geometry shader
 // TODO: Find a way to avoid duplicate code in funcitons
 GLuint loadShaders(const char * vert, const char * frag, const char * geom) {
-    
     // Create the shaders
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);

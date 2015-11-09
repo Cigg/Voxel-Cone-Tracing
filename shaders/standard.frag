@@ -23,6 +23,7 @@ uniform sampler2D DiffuseTexture;
 uniform sampler2D SpecularTexture;
 uniform sampler2D MaskTexture;
 uniform sampler2D HeightTexture;
+uniform sampler2DShadow ShadowMap;
 
 uniform vec2 DiffuseTextureSize;
 uniform vec2 SpecularTextureSize;
