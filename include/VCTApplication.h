@@ -28,6 +28,11 @@ public:
 	void draw();
 
 protected:
+	GLuint create3DTexture();
+	bool loadObjects();
+	void drawTextureQuad(GLuint textureID);
+	void drawVoxels();
+	
 	int width_, height_;
 	Camera* camera_;
 	Controls* controls_;
@@ -35,6 +40,8 @@ protected:
 
 	std::vector<Object*> objects_;
 	std::map<int, Material*> materials_;
+
+	GLuint standardShader_;
 
 	// Stuff for shadow mapping
 	GLuint depthFramebuffer_;
@@ -44,6 +51,13 @@ protected:
     GLuint geometryShader_;
 	GLuint quadVertexArray_;
 	GLuint quadVBO_;
+
+	// Render voxels
+	GLuint texture3D_;
+	GLuint renderVoxelsShader_;
+	GLuint texture3DVertexArray_;
+	unsigned int texture3DSize_;
+	float texture3DWorldSize_;
 };
 
 #endif // VCTAPPLICATION_H

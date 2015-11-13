@@ -51,15 +51,6 @@ source_group("Headers" FILES ${PROJECT_HEADERS})
 source_group("Shaders" FILES ${PROJECT_SHADERS})
 source_group("Sources" FILES ${PROJECT_SOURCES})
 
-# GCCFilter, if appliciable
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCPP)
-  option(COLOR_GCC "Use GCCFilter to color compiler output messages" ON)
-  set(COLOR_GCC_OPTIONS "-c -r -w" CACHE STRING "Arguments that are passed to gccfilter when output coloring is switchend on. Defaults to -c -r -w.")
-  if(COLOR_GCC)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "gccfilter ${COLOR_GCC_OPTIONS}")
-  endif()
-endif()
-
 # Add compiler preprocessor definitions
 add_definitions(-DGLEW_STATIC)
 add_definitions(-DGLFW_INCLUDE_NONE

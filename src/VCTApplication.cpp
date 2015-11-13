@@ -43,26 +43,7 @@ Camera* VCTApplication::getCamera() {
 	return camera_;
 }
 
-bool VCTApplication::initialize() {
-	std::cout << "Initializing TestApplication" << std::endl;
-
-	// Init camera parameters
-	glm::vec3 pos = glm::vec3(0.0, 0.0, 5.0);
-	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
-	float yaw = -3.1415f / 2.0f;
-	float pitch = 0.0f;
-
-	// Camera position, camera direction, world up vector, aspect ratio, field of view, min distance, max distance
-	camera_ = new Camera(pos, yaw, pitch, up, 45.0f, 4.0f/3.0f, 0.1f, 1000.0f);
-
-	// Speed, Mouse sensitivity
-	controls_ = new Controls(10.0f, 0.15f);
-    
-    GLuint standardShader = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
-    geometryShader_ = loadShaders("../shaders/simple.vert", "../shaders/simple.frag", "../shaders/simple.geom");
-    shadowShader_ = loadShaders("../shaders/shadow.vert", "../shaders/shadow.frag");
-    quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
-
+bool VCTApplication::loadObjects() {
 	// Load Crytek Sponza
 	std::cout << "Loading objects..." << std::endl;
 	Assimp::Importer importer;
@@ -81,7 +62,7 @@ bool VCTApplication::initialize() {
 			mat = new Material();
 			mat->loadAssimpMaterial(scene->mMaterials[m], crytekPath);
 			// Use standard shader for now
-			mat->setShader(standardShader);
+			mat->setShader(standardShader_);
 			materials_[m] = mat;
 		}
 
@@ -114,6 +95,41 @@ bool VCTApplication::initialize() {
 	// Sort object so opaque objects are rendered first
 	std::sort(objects_.begin(), objects_.end(), compareObjects);
 
+	return true;
+}
+
+bool VCTApplication::initialize() {
+	std::cout << "Initializing TestApplication" << std::endl;
+
+	// Init camera parameters
+	glm::vec3 pos = glm::vec3(0.0, 0.0, 5.0);
+	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+	float yaw = -3.1415f / 2.0f;
+	float pitch = 0.0f;
+
+	// Camera position, camera direction, world up vector, aspect ratio, field of view, min distance, max distance
+	camera_ = new Camera(pos, yaw, pitch, up, 45.0f, 4.0f/3.0f, 0.1f, 1000.0f);
+
+	// Speed, Mouse sensitivity
+	controls_ = new Controls(10.0f, 0.15f);
+    
+    standardShader_ = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
+    geometryShader_ = loadShaders("../shaders/simple.vert", "../shaders/simple.frag", "../shaders/simple.geom");
+    shadowShader_ = loadShaders("../shaders/shadow.vert", "../shaders/shadow.frag");
+    quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
+    renderVoxelsShader_ = loadShaders("../shaders/renderVoxels.vert", "../shaders/renderVoxels.frag", "../shaders/renderVoxels.geom");
+
+    // Create 3D texture to test that rendering of voxels work
+    texture3DSize_ = 16;
+    texture3DWorldSize_ = 10.0f;
+    texture3D_ = create3DTexture();
+    // Create VAO for 3D texture. Won't really store any information but it's still needed.
+	glGenVertexArrays(1, &texture3DVertexArray_);
+
+    //Load objects
+    if(!loadObjects())
+    	return false;
+
 	// Create framebuffer for shadow map
 	glGenFramebuffers(1, &depthFramebuffer_);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer_);
@@ -140,7 +156,7 @@ bool VCTApplication::initialize() {
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	
 	// Quad FBO
 	static const GLfloat quad[] = { 
 		-1.0f, -1.0f, 0.0f,
@@ -202,16 +218,20 @@ void VCTApplication::draw() {
 		(*obj)->draw(viewMatrix, projectionMatrix, depthViewProjectionMatrix, depthTexture_);
 	}
 
-	// ------------------------------------------------------------------- // 
-	// ------------ Draw depth texture on a part of the screen------------ //
-	// ------------------------------------------------------------------- // 
+	// Draw voxels
+	drawVoxels();
+
+	drawTextureQuad(depthTexture_.textureID);
+}
+
+void VCTApplication::drawTextureQuad(GLuint textureID) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0,0,300,300);
 	
 	glUseProgram(quadShader_);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, depthTexture_.textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 	glUniform1i(glGetUniformLocation(quadShader_, "Texture"), 0);
 
 	glBindVertexArray(quadVertexArray_);
@@ -221,4 +241,65 @@ void VCTApplication::draw() {
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(0);
+}
+
+void VCTApplication::drawVoxels() {
+	glUseProgram(renderVoxelsShader_);
+
+	int numVoxels = texture3DSize_ * texture3DSize_ * texture3DSize_;
+	float voxelSize = texture3DWorldSize_ / texture3DSize_;
+	glUniform1i(glGetUniformLocation(renderVoxelsShader_, "Dimensions"), texture3DSize_);
+	glUniform1i(glGetUniformLocation(renderVoxelsShader_, "TotalNumVoxels"), numVoxels);
+	glUniform1f(glGetUniformLocation(renderVoxelsShader_, "VoxelSize"), voxelSize);
+	glm::mat4 modelMatrix = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(voxelSize)), glm::vec3(0, 20, 0));
+	glm::mat4 viewMatrix = camera_->getViewMatrix();
+	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
+	glm::mat4 projectionMatrix = camera_->getProjectionMatrix();
+	glUniformMatrix4fv(glGetUniformLocation(renderVoxelsShader_, "ModelViewMatrix"), 1, GL_FALSE, &modelViewMatrix[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(renderVoxelsShader_, "ProjectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_3D, texture3D_);
+	glUniform1i(glGetUniformLocation(renderVoxelsShader_, "VoxelsTexture"), 0);
+
+	glBindVertexArray(texture3DVertexArray_);
+	glDrawArrays(GL_POINTS, 0, numVoxels);
+	
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
+GLuint VCTApplication::create3DTexture() {
+	srand (time(NULL));
+
+	int size = texture3DSize_;
+	int numVoxels = size * size * size;
+	GLubyte* data = new GLubyte[numVoxels*4];
+	for(int i = 0; i < size ; i++) {
+		for(int j = 0; j < size ; j++) {
+			for(int k = 0; k < size ; k++) {
+				unsigned char r = rand() % 256;
+				data[4*(i + j * size + k * size * size)] = r;
+				r = rand() % 256;
+				data[4*(i + j * size + k * size * size) + 1] = r;
+				r = rand() % 256;
+				data[4*(i + j * size + k * size * size) + 2] = r;
+				r = rand() % 256;
+				data[4*(i + j * size + k * size * size) + 3] = r;
+			}
+		}
+	}
+
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_3D, textureID);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, texture3DSize_, texture3DSize_, texture3DSize_, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	glBindTexture(GL_TEXTURE_3D, 0);
+
+	delete[] data;
+
+	return textureID;
 }
