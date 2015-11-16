@@ -49,3 +49,24 @@ void Object::drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLui
 
 	mesh_->draw();
 }
+
+void Object::drawTo3DTexture(GLuint shader, GLuint texID) {
+    material_->bindMaterial();
+    glUseProgram(shader);
+    
+    // left, right, bottom, top, zNear, zFar
+    glm::mat4 projectionMatrix = glm::ortho(-1.5, 1.5, -1.5, 1.5, 0.0, 1000.0);
+    glm::mat4 projX = projectionMatrix * glm::lookAt(glm::vec3(1, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    glm::mat4 projY = projectionMatrix * glm::lookAt(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, -1));
+    glm::mat4 projZ = projectionMatrix * glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    
+    glUniformMatrix4fv(glGetUniformLocation(shader, "projX"), 1, GL_FALSE, &projX[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "projY"), 1, GL_FALSE, &projY[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "projZ"), 1, GL_FALSE, &projZ[0][0]);
+    
+    glBindTexture(GL_TEXTURE_3D, texID);
+    glBindImageTexture(0, texID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glUniform1i(glGetUniformLocation(shader, "voxelTexture"), 0);
+    
+    mesh_->draw();
+}

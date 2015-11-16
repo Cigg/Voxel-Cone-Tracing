@@ -35,14 +35,19 @@ protected:
 	std::vector<Object*> objects_;
 	std::map<int, Material*> materials_;
 
-	// Stuff for shadow mapping
+	// Stuff for shadow mapping and voxelization
 	GLuint depthFramebuffer_;
 	GLuint depthTexture_;
 	GLuint shadowShader_;
 	GLuint quadShader_;
+    GLuint geometryFramebuffer_;
+    GLuint geometryTexture_; // Used to render voxelization step
     GLuint geometryShader_;
 	GLuint quadVertexArray_;
 	GLuint quadVBO_;
+    GLuint voxelTexture_;
+    
+    const int voxelSize = 256;
 };
 
 #endif // VCTAPPLICATION_H

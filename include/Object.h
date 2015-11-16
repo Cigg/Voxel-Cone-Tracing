@@ -20,6 +20,7 @@ public:
 	void setScale(float scale);
 	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix);
 	void drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLuint shader);
+    void drawTo3DTexture(GLuint shader, GLuint texID);
 
 	Mesh* mesh_;
 	Material* material_;
