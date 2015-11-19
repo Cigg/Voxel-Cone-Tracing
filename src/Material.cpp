@@ -7,8 +7,6 @@
 #include "Material.h"
 
 Material::Material() {
-	shader_ = 0;
-
 	Texture tex;
 	tex.width = tex.height = tex.textureID = 0;
 	
@@ -173,41 +171,33 @@ Texture Material::loadTexture(std::string filenameString) {
     return tex;
 }
 
-void Material::setShader(GLuint shader) {
-	shader_ = shader;
-}
+void Material::bindMaterial(GLuint shader) {
+	glUseProgram(shader);
 
-GLuint Material::bindMaterial() {
-	if(shader_ != 0) {
-		glUseProgram(shader_);
+	// glUniform3f(glGetUniformLocation(shader, "AmbientColor"), ambientColor_.r, ambientColor_.g, ambientColor_.b);
+	// glUniform3f(glGetUniformLocation(shader, "DiffuseColor"), diffuseColor_.r, diffuseColor_.g, diffuseColor_.b);
+	// glUniform3f(glGetUniformLocation(shader, "SpecularColor"), specularColor_.r, specularColor_.g, specularColor_.b);
+	
+	glUniform1f(glGetUniformLocation(shader, "Shininess"), shininess_);
+	glUniform1f(glGetUniformLocation(shader, "Opacity"), opacity_);
 
-		// glUniform3f(glGetUniformLocation(shader_, "AmbientColor"), ambientColor_.r, ambientColor_.g, ambientColor_.b);
-		// glUniform3f(glGetUniformLocation(shader_, "DiffuseColor"), diffuseColor_.r, diffuseColor_.g, diffuseColor_.b);
-		// glUniform3f(glGetUniformLocation(shader_, "SpecularColor"), specularColor_.r, specularColor_.g, specularColor_.b);
-		
-		glUniform1f(glGetUniformLocation(shader_, "Shininess"), shininess_);
-		glUniform1f(glGetUniformLocation(shader_, "Opacity"), opacity_);
+	glActiveTexture(GL_TEXTURE0 + DIFFUSE_TEXTURE);
+	glBindTexture(GL_TEXTURE_2D, diffuseTexture_.textureID);
+	glUniform1i(glGetUniformLocation(shader, "DiffuseTexture"), DIFFUSE_TEXTURE);
+	glUniform2f(glGetUniformLocation(shader, "DiffuseTextureSize"), diffuseTexture_.width, diffuseTexture_.height);
 
-		glActiveTexture(GL_TEXTURE0 + DIFFUSE_TEXTURE);
-		glBindTexture(GL_TEXTURE_2D, diffuseTexture_.textureID);
-		glUniform1i(glGetUniformLocation(shader_, "DiffuseTexture"), DIFFUSE_TEXTURE);
-		glUniform2f(glGetUniformLocation(shader_, "DiffuseTextureSize"), diffuseTexture_.width, diffuseTexture_.height);
+	glActiveTexture(GL_TEXTURE0 + SPECULAR_TEXTURE);
+	glBindTexture(GL_TEXTURE_2D, specularTexture_.textureID);
+	glUniform1i(glGetUniformLocation(shader, "SpecularTexture"), SPECULAR_TEXTURE);
+	glUniform2f(glGetUniformLocation(shader, "SpecularTextureSize"), specularTexture_.width, specularTexture_.height);
 
-		glActiveTexture(GL_TEXTURE0 + SPECULAR_TEXTURE);
-		glBindTexture(GL_TEXTURE_2D, specularTexture_.textureID);
-		glUniform1i(glGetUniformLocation(shader_, "SpecularTexture"), SPECULAR_TEXTURE);
-		glUniform2f(glGetUniformLocation(shader_, "SpecularTextureSize"), specularTexture_.width, specularTexture_.height);
+	glActiveTexture(GL_TEXTURE0 + MASK_TEXTURE);
+	glBindTexture(GL_TEXTURE_2D, maskTexture_.textureID);
+	glUniform1i(glGetUniformLocation(shader, "MaskTexture"), MASK_TEXTURE);
+	glUniform2f(glGetUniformLocation(shader, "MaskTextureSize"), maskTexture_.width, maskTexture_.height);
 
-		glActiveTexture(GL_TEXTURE0 + MASK_TEXTURE);
-		glBindTexture(GL_TEXTURE_2D, maskTexture_.textureID);
-		glUniform1i(glGetUniformLocation(shader_, "MaskTexture"), MASK_TEXTURE);
-		glUniform2f(glGetUniformLocation(shader_, "MaskTextureSize"), maskTexture_.width, maskTexture_.height);
-
-		glActiveTexture(GL_TEXTURE0 + HEIGHT_TEXTURE);
-		glBindTexture(GL_TEXTURE_2D, heightTexture_.textureID);
-		glUniform1i(glGetUniformLocation(shader_, "HeightTexture"), HEIGHT_TEXTURE);
-		glUniform2f(glGetUniformLocation(shader_, "HeightTextureSize"), heightTexture_.width, heightTexture_.height);
-	}
-
-	return shader_;
+	glActiveTexture(GL_TEXTURE0 + HEIGHT_TEXTURE);
+	glBindTexture(GL_TEXTURE_2D, heightTexture_.textureID);
+	glUniform1i(glGetUniformLocation(shader, "HeightTexture"), HEIGHT_TEXTURE);
+	glUniform2f(glGetUniformLocation(shader, "HeightTextureSize"), heightTexture_.width, heightTexture_.height);
 }

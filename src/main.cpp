@@ -108,7 +108,7 @@ int main(void) {
         currentTime = glfwGetTime();
         float deltaTime = float(currentTime - previousTime);
         previousTime = currentTime;
-
+        
         app.update(deltaTime);
         app.draw();
 

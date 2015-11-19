@@ -43,13 +43,11 @@ Camera* VCTApplication::getCamera() {
 	return camera_;
 }
 
-bool VCTApplication::loadObjects() {
-	// Load Crytek Sponza
-	std::cout << "Loading objects..." << std::endl;
+bool VCTApplication::loadObject(std::string path, std::string name, glm::vec3 pos, float scale) {
 	Assimp::Importer importer;
+
 	// Read file and store as a "scene"
-	std::string crytekPath = "../data/models/crytek-sponza/";
-	const aiScene* scene = importer.ReadFile(crytekPath + "sponza.obj", aiProcess_Triangulate |
+	const aiScene* scene = importer.ReadFile(path + name, aiProcess_Triangulate |
 		aiProcess_CalcTangentSpace |
 		aiProcess_JoinIdenticalVertices);
 	if(scene) {
@@ -58,11 +56,9 @@ bool VCTApplication::loadObjects() {
 		Mesh* mesh;
 
 		// Create a materials from the loaded assimp materials
-		for(unsigned int m = 0; m < scene->mNumMaterials; m++) {
+		for(unsigned int m = 1; m < scene->mNumMaterials; m++) {
 			mat = new Material();
-			mat->loadAssimpMaterial(scene->mMaterials[m], crytekPath);
-			// Use standard shader for now
-			mat->setShader(standardShader_);
+			mat->loadAssimpMaterial(scene->mMaterials[m], path);
 			materials_[m] = mat;
 		}
 
@@ -78,9 +74,12 @@ bool VCTApplication::loadObjects() {
 			obj->mesh_ = mesh;
 
 			// Store pointer to material used
-			obj->material_ = materials_[scene->mMeshes[m]->mMaterialIndex];
+			if(scene->mNumMaterials > 1) {
+				obj->material_ = materials_[scene->mMeshes[m]->mMaterialIndex];
+			}
 
-			obj->setScale(0.05f);
+			obj->setScale(scale);
+			obj->setPosition(pos);
 			objects_.push_back(obj);
 
 		}
@@ -89,11 +88,6 @@ bool VCTApplication::loadObjects() {
 		std::cerr << "Mesh: " << importer.GetErrorString() << std::endl;
 		return false;	
 	}
-
-	std::cout << "Loading done! " << objects_.size() << " objects loaded" << std::endl;
-
-	// Sort object so opaque objects are rendered first
-	std::sort(objects_.begin(), objects_.end(), compareObjects);
 
 	return true;
 }
@@ -111,7 +105,7 @@ bool VCTApplication::initialize() {
 	camera_ = new Camera(pos, yaw, pitch, up, 45.0f, 4.0f/3.0f, 0.1f, 1000.0f);
 
 	// Speed, Mouse sensitivity
-	controls_ = new Controls(10.0f, 0.15f);
+	controls_ = new Controls(10.0f, 0.0015f);
     
     standardShader_ = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
     geometryShader_ = loadShaders("../shaders/simple.vert", "../shaders/simple.frag", "../shaders/simple.geom");
@@ -119,16 +113,21 @@ bool VCTApplication::initialize() {
     quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
     renderVoxelsShader_ = loadShaders("../shaders/renderVoxels.vert", "../shaders/renderVoxels.frag", "../shaders/renderVoxels.geom");
 
+    // Load objects
+    std::cout << "Loading objects... " << std::endl;
+    loadObject("../data/models/crytek-sponza/", "sponza.obj", glm::vec3(0.0f), 0.05f);
+	loadObject("../data/models/", "suzanne.obj");
+    std::cout << "Loading done! " << objects_.size() << " objects loaded" << std::endl;
+
+	// Sort object so opaque objects are rendered first
+	std::sort(objects_.begin(), objects_.end(), compareObjects);
+ 
     // Create 3D texture to test that rendering of voxels work
     texture3DSize_ = 16;
     texture3DWorldSize_ = 10.0f;
     texture3D_ = create3DTexture();
     // Create VAO for 3D texture. Won't really store any information but it's still needed.
 	glGenVertexArrays(1, &texture3DVertexArray_);
-
-    //Load objects
-    if(!loadObjects())
-    	return false;
 
 	// Create framebuffer for shadow map
 	glGenFramebuffers(1, &depthFramebuffer_);
@@ -215,13 +214,19 @@ void VCTApplication::draw() {
 
 	for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
 		//(*obj)->drawSimple(viewMatrix, projectionMatrix, shadowShader_);
-		(*obj)->draw(viewMatrix, projectionMatrix, depthViewProjectionMatrix, depthTexture_);
+		(*obj)->draw(viewMatrix, projectionMatrix, depthViewProjectionMatrix, depthTexture_, standardShader_);
 	}
 
-	// Draw voxels
-	drawVoxels();
+	// // Voxelize
+	// for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
+	// 	//(*obj)->drawSimple(viewMatrix, projectionMatrix, geometryShader_);
+	// 	(*obj)->draw(viewMatrix, projectionMatrix, depthViewProjectionMatrix, depthTexture_, standardShader_);
+	// }
 
-	drawTextureQuad(depthTexture_.textureID);
+	// Draw voxels
+	//drawVoxels();
+
+	//drawTextureQuad(depthTexture_.textureID);
 }
 
 void VCTApplication::drawTextureQuad(GLuint textureID) {

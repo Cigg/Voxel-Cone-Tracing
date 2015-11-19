@@ -22,16 +22,13 @@ public:
 	~Material();
 
 	void loadAssimpMaterial(const aiMaterial* material, std::string path);
-	void setShader(GLuint shaderID);
 	Texture loadTexture(std::string filenameString);
-	GLuint bindMaterial();
+	void bindMaterial(GLuint shader);
 
 	bool hasAlpha_; // Has an alpha channel in the diffuseTexture_ 
 	std::string name_;
 
 protected:
-	GLuint shader_;
-
 	// Material properties
 	glm::vec3 ambientColor_;
 	glm::vec3 diffuseColor_;

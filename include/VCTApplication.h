@@ -29,7 +29,7 @@ public:
 
 protected:
 	GLuint create3DTexture();
-	bool loadObjects();
+	bool loadObject(std::string path, std::string name, glm::vec3 pos = glm::vec3(0.0f), float scale = 1.0f);
 	void drawTextureQuad(GLuint textureID);
 	void drawVoxels();
 	

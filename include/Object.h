@@ -19,7 +19,7 @@ public:
 	bool loadMeshFromFile(const std::string &path);
 	void setPosition(glm::vec3 pos);
 	void setScale(float scale);
-	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, glm::mat4 &depthModelViewProjectionMatrix, Texture depthTexture);
+	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, glm::mat4 &depthModelViewProjectionMatrix, Texture depthTexture, GLuint shader);
 	void drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLuint shader);
 
 	Mesh* mesh_;
@@ -31,6 +31,8 @@ protected:
 };
 
 inline bool compareObjects(Object* obj1, Object* obj2) {
+	if(!obj1->material_ || obj2->material_)
+		return false;
 	return (!obj1->material_->hasAlpha_ && obj2->material_->hasAlpha_);
 }
 
