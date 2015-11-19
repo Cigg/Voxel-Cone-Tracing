@@ -82,7 +82,7 @@ bool VCTApplication::loadObjects() {
 			// Store pointer to material used
 			obj->material_ = materials_[scene->mMeshes[m]->mMaterialIndex];
 
-			obj->setScale(0.05f);
+			obj->setScale(1.0f);
 			objects_.push_back(obj);
 		}
 	}
@@ -112,16 +112,16 @@ bool VCTApplication::initialize() {
 	camera_ = new Camera(pos, yaw, pitch, up, 45.0f, 4.0f/3.0f, 0.1f, 1000.0f);
 
 	// Speed, Mouse sensitivity
-	controls_ = new Controls(10.0f, 0.15f);
+	controls_ = new Controls(10.0f, 0.0015f);
     
 	standardShader_ = loadShaders("../shaders/standard.vert", "../shaders/standard.frag");
-    geometryShader_ = loadShaders("../shaders/simple.vert", "../shaders/simple.frag", "../shaders/simple.geom");
+    voxelizationShader_ = loadShaders("../shaders/voxelization.vert", "../shaders/voxelization.frag", "../shaders/voxelization.geom");
     shadowShader_ = loadShaders("../shaders/shadow.vert", "../shaders/shadow.frag");
     quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
     renderVoxelsShader_ = loadShaders("../shaders/renderVoxels.vert", "../shaders/renderVoxels.frag", "../shaders/renderVoxels.geom");
 
     // Create 3D texture to test that rendering of voxels work
-    texture3DSize_ = voxelSize;
+    texture3DSize_ = voxelDimensions_;
     texture3DWorldSize_ = 10.0f;
     //texture3D_ = create3DTexture();
     // Create VAO for 3D texture. Won't really store any information but it's still needed.
@@ -162,24 +162,24 @@ bool VCTApplication::initialize() {
 
     
     // ------------------------------------------------------------------- //
-    // ---------------- Geometry shader initialization ------------------- //
+    // ---------------- Voxelization shader initialization ------------------- //
     // ------------------------------------------------------------------- //
-    glGenFramebuffers(1, &geometryFramebuffer_);
-    glBindFramebuffer(GL_FRAMEBUFFER, geometryFramebuffer_);
+    glGenFramebuffers(1, &voxelizationFramebuffer_);
+    glBindFramebuffer(GL_FRAMEBUFFER, voxelizationFramebuffer_);
     
-    glGenTextures(1, &geometryTexture_);
-    glBindTexture(GL_TEXTURE_2D, geometryTexture_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, voxelSize, voxelSize, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glGenTextures(1, &voxelizationTexture_);
+    glBindTexture(GL_TEXTURE_2D, voxelizationTexture_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, voxelDimensions_, voxelDimensions_, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, geometryTexture_, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, voxelizationTexture_, 0);
     
     // The depth buffer
     // Use this?
     GLuint depthrenderbuffer;
     glGenRenderbuffers(1, &depthrenderbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, voxelSize, voxelSize);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, voxelDimensions_, voxelDimensions_);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -200,15 +200,15 @@ bool VCTApplication::initialize() {
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// Fill 3D texture with empty values
-	int numVoxels = voxelSize * voxelSize * voxelSize;
+	int numVoxels = voxelDimensions_ * voxelDimensions_ * voxelDimensions_;
 	GLubyte* data = new GLubyte[numVoxels*4];
-	for(int i = 0; i < voxelSize ; i++) {
-		for(int j = 0; j < voxelSize ; j++) {
-			for(int k = 0; k < voxelSize ; k++) {
-				data[4*(i + j * voxelSize + k * voxelSize * voxelSize)] = 0;
-				data[4*(i + j * voxelSize + k * voxelSize * voxelSize) + 1] = 0;
-				data[4*(i + j * voxelSize + k * voxelSize * voxelSize) + 2] = 0;
-				data[4*(i + j * voxelSize + k * voxelSize * voxelSize) + 3] = 0;
+	for(int i = 0; i < voxelDimensions_ ; i++) {
+		for(int j = 0; j < voxelDimensions_ ; j++) {
+			for(int k = 0; k < voxelDimensions_ ; k++) {
+				data[4*(i + j * voxelDimensions_ + k * voxelDimensions_ * voxelDimensions_)] = 0;
+				data[4*(i + j * voxelDimensions_ + k * voxelDimensions_ * voxelDimensions_) + 1] = 0;
+				data[4*(i + j * voxelDimensions_ + k * voxelDimensions_ * voxelDimensions_) + 2] = 0;
+				data[4*(i + j * voxelDimensions_ + k * voxelDimensions_ * voxelDimensions_) + 3] = 0;
 			}
 		}
 	}
@@ -257,7 +257,7 @@ void VCTApplication::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 viewMatrix = glm::lookAt(-glm::vec3(0.3, -0.9, 0.1), glm::vec3(0,0,0), glm::vec3(0,1,0));
-	glm::mat4 projectionMatrix = glm::ortho<float>(-120, 120, -120, 120, -500, 500);
+	glm::mat4 projectionMatrix = glm::ortho	<float>(-120, 120, -120, 120, -500, 500);
 	glm::mat4 depthViewProjectionMatrix = projectionMatrix * viewMatrix;
 
 	for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
@@ -265,17 +265,17 @@ void VCTApplication::draw() {
 	}
     
     // ------------------------------------------------------------------- //
-    // --------------------- Use geometry shader ------------------------- //
+    // --------------------- Use voxelization shader ------------------------- //
     // ------------------------------------------------------------------- //
     glDisable(GL_CULL_FACE);
     
-    glBindFramebuffer(GL_FRAMEBUFFER, geometryFramebuffer_);
-    glViewport(0, 0, voxelSize, voxelSize);
+    glBindFramebuffer(GL_FRAMEBUFFER, voxelizationFramebuffer_);
+    glViewport(0, 0, voxelDimensions_, voxelDimensions_);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
-        (*obj)->drawTo3DTexture(geometryShader_, voxelTexture_, voxelSize);
+        (*obj)->drawTo3DTexture(voxelizationShader_, voxelTexture_, voxelDimensions_);
     }
 
 	// ------------------------------------------------------------------- // 
@@ -301,7 +301,7 @@ void VCTApplication::draw() {
 	drawVoxels();
 
 	//drawTextureQuad(depthTexture_.textureID);
-	drawTextureQuad(geometryTexture_);
+	drawTextureQuad(voxelizationTexture_);
 }
 
 void VCTApplication::drawTextureQuad(GLuint textureID) {

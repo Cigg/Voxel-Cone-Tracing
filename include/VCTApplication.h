@@ -52,11 +52,11 @@ protected:
 	GLuint quadVBO_;
 
 	// Voxelization
-	GLuint geometryFramebuffer_;
-    GLuint geometryTexture_; // Used to render voxelization step
-    GLuint geometryShader_;
+	GLuint voxelizationFramebuffer_;
+    GLuint voxelizationTexture_; // Used to render voxelization step
+    GLuint voxelizationShader_;
     GLuint voxelTexture_;
-    const int voxelSize = 64;
+    const int voxelDimensions_ = 64;
 
 	// Render voxels
 	GLuint texture3D_;

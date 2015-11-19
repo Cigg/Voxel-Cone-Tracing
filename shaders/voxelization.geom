@@ -14,7 +14,7 @@ in vData {
 out fData {
     vec2 UV;
     mat4 projectionMatrix;
-    float depth;
+    flat int axis;
 } frag;
 
 uniform mat4 projX;
@@ -31,15 +31,14 @@ void main() {
     float nDotZ = abs(normal.z);
 
     // 0 = x axis dominant, 1 = y axis dominant, 2 = z axis dominant
-    int domAxis = (nDotX >= nDotY && nDotX >= nDotZ) ? 0 : (nDotY >= nDotX && nDotY >= nDotZ) ? 1 : 2;
-    frag.projectionMatrix = domAxis == 0 ? projX : domAxis == 1 ? projY : projZ;
+    frag.axis = (nDotX >= nDotY && nDotX >= nDotZ) ? 1 : (nDotY >= nDotX && nDotY >= nDotZ) ? 2 : 3;
+    frag.projectionMatrix = frag.axis == 1 ? projX : frag.axis == 2 ? projY : projZ;
     
     // For every vertex sent in vertices
     for(int i = 0;i < gl_in.length(); i++) {
         vec3 middlePos = gl_in[0].gl_Position.xyz / 3.0 + gl_in[1].gl_Position.xyz / 3.0 + gl_in[2].gl_Position.xyz / 3.0;
         frag.UV = vertices[i].UV;
-        frag.depth = gl_in[i].gl_Position.z;
-        gl_Position =  frag.projectionMatrix * gl_in[i].gl_Position;
+        gl_Position = frag.projectionMatrix * gl_in[i].gl_Position;
         EmitVertex();
     }
     
