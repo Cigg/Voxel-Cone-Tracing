@@ -13,7 +13,7 @@ void main() {
 	pos.x = gl_VertexID % Dimensions;
 	pos.z = (gl_VertexID / Dimensions) % Dimensions;
 	pos.y = gl_VertexID / (Dimensions*Dimensions);
-	pos = pos - vec3(Dimensions * 0.5f);
+	// pos = pos - vec3(Dimensions * 0.5f);
 	color = texture(VoxelsTexture, pos/Dimensions);
 	gl_Position = vec4(pos, 1);
 }

@@ -10,12 +10,7 @@ out vData {
     vec2 UV;
 } vert;
 
-uniform mat4 ViewMatrix;
-uniform mat4 ModelMatrix;
-uniform mat4 ModelViewMatrix;
-uniform mat4 ProjectionMatrix;
-
 void main() {
     vert.UV = vertexUV;
-    gl_Position =  ProjectionMatrix * ModelViewMatrix * vec4(vertexPosition_model,1);
+    gl_Position = vec4(vertexPosition_model,1);
 }
