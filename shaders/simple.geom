@@ -13,6 +13,7 @@ in vData {
 // Data that will be sent to fragment shader
 out fData {
     vec2 UV;
+    mat4 projectionMatrix;
 } frag;
 
 uniform mat4 projX;
@@ -30,13 +31,13 @@ void main() {
 
     // 0 = x axis dominant, 1 = y axis dominant, 2 = z axis dominant
     int domAxis = (nDotX >= nDotY && nDotX >= nDotZ) ? 0 : (nDotY >= nDotX && nDotY >= nDotZ) ? 1 : 2;
-    mat4 projectionMatrix = domAxis == 0 ? projX : domAxis == 1 ? projY : projZ;
+    frag.projectionMatrix = domAxis == 0 ? projX : domAxis == 1 ? projY : projZ;
     
     // For every vertex sent in vertices
     for(int i = 0;i < gl_in.length(); i++) {
         
         frag.UV = vertices[i].UV;
-        gl_Position =  projectionMatrix * gl_in[i].gl_Position;
+        gl_Position =  frag.projectionMatrix * gl_in[i].gl_Position;
         EmitVertex();
     }
     

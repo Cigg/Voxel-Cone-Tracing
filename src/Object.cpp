@@ -64,6 +64,7 @@ void Object::drawTo3DTexture(GLuint shader, GLuint texID) {
     glUniformMatrix4fv(glGetUniformLocation(shader, "projY"), 1, GL_FALSE, &projY[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shader, "projZ"), 1, GL_FALSE, &projZ[0][0]);
     
+    // Bind single level of texture to image unit so we can write to it from shaders
     glBindTexture(GL_TEXTURE_3D, texID);
     glBindImageTexture(0, texID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
     glUniform1i(glGetUniformLocation(shader, "voxelTexture"), 0);
