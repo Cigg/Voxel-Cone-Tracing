@@ -28,7 +28,7 @@ void Controls::updateFromInputs(VCTApplication* app, float deltaTime) {
 	// This is an ugly hack to wait until it is positioned in the middle
 	// of the screen
 	if(frameCount_ > 4) {
-		camera->addYaw(mouseDelta.x * mouseSensitivity_); 
+		camera->addYaw(mouseDelta.x * mouseSensitivity_);
 		camera->addPitch(-1.0 * mouseDelta.y * mouseSensitivity_);
 	}
 	else {

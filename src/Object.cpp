@@ -63,3 +63,28 @@ void Object::drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLui
 
 	mesh_->draw();
 }
+
+void Object::drawTo3DTexture(GLuint shader, GLuint texID, int voxelDimensions) {
+    glUseProgram(shader);
+    material_->bindMaterial(shader);
+    
+    // left, right, bottom, top, zNear, zFar
+    float size = 2000.0f; // Box world size
+    glm::mat4 projectionMatrix = glm::ortho(-size*0.5f, size*0.5f, -size*0.5f, size*0.5f, size*0.5f, size*1.5f);
+    glm::mat4 projX = projectionMatrix * glm::lookAt(glm::vec3(size, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    glm::mat4 projY = projectionMatrix * glm::lookAt(glm::vec3(0, size, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, -1));
+    glm::mat4 projZ = projectionMatrix * glm::lookAt(glm::vec3(0, 0, size), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    
+    glUniformMatrix4fv(glGetUniformLocation(shader, "projX"), 1, GL_FALSE, &projX[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "projY"), 1, GL_FALSE, &projY[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "projZ"), 1, GL_FALSE, &projZ[0][0]);
+
+    glUniform1i(glGetUniformLocation(shader, "voxelDimensions"), voxelDimensions);
+    
+    // Bind single level of texture to image unit so we can write to it from shaders
+    glBindTexture(GL_TEXTURE_3D, texID);
+    glBindImageTexture(0, texID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glUniform1i(glGetUniformLocation(shader, "voxelTexture"), 0);
+    
+    mesh_->draw();
+}

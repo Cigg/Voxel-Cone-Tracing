@@ -48,9 +48,15 @@ protected:
 	Texture depthTexture_;
 	GLuint shadowShader_;
 	GLuint quadShader_;
-    GLuint geometryShader_;
 	GLuint quadVertexArray_;
 	GLuint quadVBO_;
+
+	// Voxelization
+	GLuint voxelizationFramebuffer_;
+    GLuint voxelizationTexture_; // Used to render voxelization step
+    GLuint voxelizationShader_;
+    GLuint voxelTexture_;
+    const int voxelDimensions_ = 100;
 
 	// Render voxels
 	GLuint texture3D_;
