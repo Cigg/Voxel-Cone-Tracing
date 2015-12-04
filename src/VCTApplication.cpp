@@ -113,7 +113,7 @@ bool VCTApplication::initialize() {
 
     // Load objects
     std::cout << "Loading objects... " << std::endl;
-    loadObject("../data/models/crytek-sponza/", "sponza.obj", glm::vec3(0.0f), 0.05f);
+    loadObject("../data/models/crytek-sponza/", "sponza.obj", glm::vec3(0.0f), sponzaScale_);
 	//loadObject("../data/models/", "suzanne.obj");
     std::cout << "Loading done! " << objects_.size() << " objects loaded" << std::endl;
 
@@ -122,7 +122,6 @@ bool VCTApplication::initialize() {
  
     // Create 3D texture to test that rendering of voxels work
     texture3DSize_ = voxelDimensions_;
-    texture3DWorldSize_ = 10.0f;
     //texture3D_ = create3DTexture();
     // Create VAO for 3D texture. Won't really store any information but it's still needed.
 	glGenVertexArrays(1, &texture3DVertexArray_);
@@ -139,8 +138,10 @@ bool VCTApplication::initialize() {
 	glGenTextures(1, &depthTexture_.textureID);
 	glBindTexture(GL_TEXTURE_2D, depthTexture_.textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, depthTexture_.width, depthTexture_.height, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
@@ -270,7 +271,7 @@ void VCTApplication::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
-        (*obj)->drawTo3DTexture(voxelizationShader_, voxelTexture_, voxelDimensions_);
+        (*obj)->drawTo3DTexture(voxelizationShader_, voxelTexture_, depthTexture_, voxelDimensions_, texture3DWorldSize_, depthViewProjectionMatrix);
     }
 
 	// ------------------------------------------------------------------- // 
@@ -333,7 +334,8 @@ void VCTApplication::drawVoxels() {
 	glUniform1i(glGetUniformLocation(renderVoxelsShader_, "Dimensions"), texture3DSize_);
 	glUniform1i(glGetUniformLocation(renderVoxelsShader_, "TotalNumVoxels"), numVoxels);
 	glUniform1f(glGetUniformLocation(renderVoxelsShader_, "VoxelSize"), voxelSize);
-	glm::mat4 modelMatrix = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(voxelSize)), glm::vec3(0, 20, 0));
+	glm::mat4 modelMatrix = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(voxelSize * sponzaScale_)), glm::vec3(0, 0, 0));
+	//glm::mat4 modelMatrix = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(voxelSize)), glm::vec3(0, 0, 0));
 	glm::mat4 viewMatrix = camera_->getViewMatrix();
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 	glm::mat4 projectionMatrix = camera_->getProjectionMatrix();

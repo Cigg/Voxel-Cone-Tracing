@@ -8,6 +8,7 @@ layout (triangle_strip, max_vertices = 3) out;
 // Input from vertex shader, stored in an array
 in vData {
     vec2 UV;
+    vec4 position_depth;
 } vertices[];
 
 // Data that will be sent to fragment shader
@@ -15,6 +16,7 @@ out fData {
     vec2 UV;
     mat4 projectionMatrix;
     flat int axis;
+    vec4 position_depth;
 } frag;
 
 uniform mat4 projX;
@@ -38,6 +40,7 @@ void main() {
     for(int i = 0;i < gl_in.length(); i++) {
         vec3 middlePos = gl_in[0].gl_Position.xyz / 3.0 + gl_in[1].gl_Position.xyz / 3.0 + gl_in[2].gl_Position.xyz / 3.0;
         frag.UV = vertices[i].UV;
+        frag.position_depth = vertices[i].position_depth;
         gl_Position = frag.projectionMatrix * gl_in[i].gl_Position;
         EmitVertex();
     }

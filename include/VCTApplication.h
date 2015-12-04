@@ -43,6 +43,8 @@ protected:
 
 	GLuint standardShader_;
 
+	const float sponzaScale_ = 0.05f;
+
 	// Stuff for shadow mapping
 	GLuint depthFramebuffer_;
 	Texture depthTexture_;
@@ -56,14 +58,14 @@ protected:
     GLuint voxelizationTexture_; // Used to render voxelization step
     GLuint voxelizationShader_;
     GLuint voxelTexture_;
-    const int voxelDimensions_ = 100;
+    const int voxelDimensions_ = 64;
 
 	// Render voxels
 	GLuint texture3D_;
 	GLuint renderVoxelsShader_;
 	GLuint texture3DVertexArray_;
 	unsigned int texture3DSize_;
-	float texture3DWorldSize_;
+	const float texture3DWorldSize_ = 2000.0f;
 };
 
 #endif // VCTAPPLICATION_H
