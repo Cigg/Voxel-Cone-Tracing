@@ -19,9 +19,9 @@ public:
 	bool loadMeshFromFile(const std::string &path);
 	void setPosition(glm::vec3 pos);
 	void setScale(float scale);
-	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, glm::mat4 &depthModelViewProjectionMatrix, Texture depthTexture, GLuint shader);
+	void draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, glm::mat4 &depthModelViewProjectionMatrix, Texture2D depthTexture, Texture3D voxelTexture, GLuint shader);
 	void drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLuint shader);
-    void drawTo3DTexture(GLuint shader, GLuint texID, Texture depthTexture, int voxelSize, float size, glm::mat4 &depthViewProjectionMatrix);
+    void drawTo3DTexture(GLuint shader, Texture3D voxelTexture, Texture2D depthTexture, float size, glm::mat4 &depthViewProjectionMatrix);
 
 	Mesh* mesh_;
 	Material* material_;

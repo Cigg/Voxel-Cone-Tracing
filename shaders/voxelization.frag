@@ -18,7 +18,7 @@ uniform int voxelDimensions;
 void main() {
 	// Material color texture lookup and check if position voxel is shadowed widh the shadow map
     vec4 materialColor = texture(DiffuseTexture, frag.UV);
-    float visibility = texture(ShadowMap, vec3(frag.position_depth.xy, (frag.position_depth.z - 0.0001)/frag.position_depth.w));
+    float visibility = texture(ShadowMap, vec3(frag.position_depth.xy, (frag.position_depth.z - 0.001)/frag.position_depth.w));
 
 	ivec3 camPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, voxelDimensions * gl_FragCoord.z);
 	ivec3 texPos;
@@ -35,6 +35,9 @@ void main() {
 	    texPos = camPos;
 	}
 
+	texPos.z = voxelDimensions - texPos.z - 1;
+
 	color = vec4(texPos / float(voxelDimensions), 1.0);
-    imageStore(voxelTexture, texPos, vec4(materialColor.rgb * visibility, materialColor.a));
+    //imageStore(voxelTexture, texPos, vec4(materialColor.rgb * visibility, materialColor.a));
+    imageStore(voxelTexture, texPos, materialColor);
 }

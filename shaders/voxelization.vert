@@ -7,6 +7,7 @@ layout(location = 3) in vec3 vertexTangent_model;
 layout(location = 4) in vec3 vertexBitangent_model;
 
 uniform mat4 DepthModelViewProjectionMatrix;
+uniform mat4 ModelMatrix;
 
 out vData {
     vec2 UV;
@@ -18,5 +19,5 @@ void main() {
     vert.position_depth = DepthModelViewProjectionMatrix * vec4(vertexPosition_model, 1);
 	vert.position_depth.xyz = vert.position_depth.xyz * 0.5f + 0.5f;
 
-    gl_Position = vec4(vertexPosition_model,1);
+    gl_Position = ModelMatrix * vec4(vertexPosition_model,1);
 }

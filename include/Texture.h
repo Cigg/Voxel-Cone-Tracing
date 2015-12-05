@@ -3,9 +3,14 @@
 
 #include <GL/glew.h>
 
-struct Texture {
+struct Texture2D {
 	GLuint textureID;
 	int width, height, componentsPerPixel;
+};
+
+struct Texture3D {
+	GLuint textureID;
+	int size, componentsPerPixel;
 };
 
 #endif // TEXTURE_H

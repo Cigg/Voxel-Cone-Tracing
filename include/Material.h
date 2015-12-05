@@ -22,7 +22,7 @@ public:
 	~Material();
 
 	void loadAssimpMaterial(const aiMaterial* material, std::string path);
-	Texture loadTexture(std::string filenameString);
+	Texture2D loadTexture(std::string filenameString);
 	void bindMaterial(GLuint shader);
 
 	bool hasAlpha_; // Has an alpha channel in the diffuseTexture_ 
@@ -37,10 +37,10 @@ protected:
 	float shininess_;
 	float opacity_;
 
-	Texture diffuseTexture_;
-	Texture specularTexture_;
-	Texture maskTexture_;
-	Texture heightTexture_;
+	Texture2D diffuseTexture_;
+	Texture2D specularTexture_;
+	Texture2D maskTexture_;
+	Texture2D heightTexture_;
 
 	// Not used
 	// int illuminationModel_;

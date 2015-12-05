@@ -7,7 +7,7 @@
 #include "Material.h"
 
 Material::Material() {
-	Texture tex;
+	Texture2D tex;
 	tex.width = tex.height = tex.textureID = 0;
 	
 	diffuseTexture_ = tex;
@@ -86,8 +86,8 @@ void Material::loadAssimpMaterial(const aiMaterial* mat, std::string path) {
 	}
 }
 
-Texture Material::loadTexture(std::string filenameString) {
-	Texture tex;
+Texture2D Material::loadTexture(std::string filenameString) {
+	Texture2D tex;
 
     const char* filename = filenameString.c_str();
     GLubyte* textureData = stbi_load(filename, &tex.width, &tex.height, &tex.componentsPerPixel, 0);
