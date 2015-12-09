@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 // Interpolated values from the vertex shaders
 in vec2 UV;
@@ -35,7 +35,8 @@ uniform vec2 HeightTextureSize;
 
 void main() {
 	vec4 materialColor = texture(DiffuseTexture, UV);
-    vec4 voxelColor = texture(VoxelTexture, voxelTextureUV);
+    // level 0 mipmap is full size, level 1 is half that size and so on
+    vec4 voxelColor = textureLod(VoxelTexture, voxelTextureUV, 0.0);
 	float alpha = materialColor.a;
 
 	vec3 lightColor = vec3(1.0f);

@@ -90,16 +90,16 @@ void Object::drawTo3DTexture(GLuint shader, Texture3D voxelTexture, Texture2D de
     glUniform1i(glGetUniformLocation(shader, "voxelDimensions"), voxelTexture.size);
     glUniformMatrix4fv(glGetUniformLocation(shader, "DepthModelViewProjectionMatrix"), 1, GL_FALSE, &depthModelViewProjectionMatrix[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shader, "ModelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
-    
-    // Bind single level of texture to image unit so we can write to it from shaders
-    glBindTexture(GL_TEXTURE_3D, voxelTexture.textureID);
-    glBindImageTexture(0, voxelTexture.textureID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-    glUniform1i(glGetUniformLocation(shader, "voxelTexture"), 0);
 
     glActiveTexture(GL_TEXTURE0 + 1);
 	glBindTexture(GL_TEXTURE_2D, depthTexture.textureID);
 	glUniform1i(glGetUniformLocation(shader, "ShadowMap"), 1);
 
+	// Bind single level of texture to image unit so we can write to it from shaders
+    glBindTexture(GL_TEXTURE_3D, voxelTexture.textureID);
+    glBindImageTexture(0, voxelTexture.textureID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glUniform1i(glGetUniformLocation(shader, "voxelTexture"), 0);
     
     mesh_->draw();
+    //printf("Gen\n");
 }

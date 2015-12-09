@@ -110,6 +110,7 @@ bool VCTApplication::initialize() {
     shadowShader_ = loadShaders("../shaders/shadow.vert", "../shaders/shadow.frag");
     quadShader_ = loadShaders("../shaders/quad.vert", "../shaders/quad.frag");
     renderVoxelsShader_ = loadShaders("../shaders/renderVoxels.vert", "../shaders/renderVoxels.frag", "../shaders/renderVoxels.geom");
+    //clearVoxelsShader_ = loadShaders("../shaders/clearVoxels.vert", "../shaders/clearVoxels.frag");
 
     // Load objects
     std::cout << "Loading objects... " << std::endl;
@@ -190,8 +191,7 @@ bool VCTApplication::initialize() {
     
     glGenTextures(1, &voxelTexture_.textureID);
     glBindTexture(GL_TEXTURE_3D, voxelTexture_.textureID);
-    //glGenerateMipmap(GL_TEXTURE_3D);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Fill 3D texture with empty values
@@ -210,6 +210,8 @@ bool VCTApplication::initialize() {
 
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, voxelTexture_.size, voxelTexture_.size, voxelTexture_.size, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	delete[] data;
+	
+	glGenerateMipmap(GL_TEXTURE_3D);
     
     // ------------------------------------------------------------------- //
     // -------------------------------- Misc ----------------------------- //
@@ -243,6 +245,9 @@ void VCTApplication::draw() {
 	// ------------------------------------------------------------------- // 
 	// --------------------- Draw depth to texture ----------------------- //
 	// ------------------------------------------------------------------- // 
+	glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
 	// Draw to depth frame buffer instead of screen
 	glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer_);
 	// Set viewport of framebuffer size
@@ -263,6 +268,7 @@ void VCTApplication::draw() {
     // --------------------- Use voxelization shader ------------------------- //
     // ------------------------------------------------------------------- //
     glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
     
     glBindFramebuffer(GL_FRAMEBUFFER, voxelizationFramebuffer_);
     glViewport(0, 0, voxelTexture_.size, voxelTexture_.size);
@@ -273,10 +279,13 @@ void VCTApplication::draw() {
         (*obj)->drawTo3DTexture(voxelizationShader_, voxelTexture_, depthTexture_, voxelGridWorldSize_, depthViewProjectionMatrix);
     }
 
+    glGenerateMipmap(GL_TEXTURE_3D);
+
 	// ------------------------------------------------------------------- // 
 	// --------------------- Draw the scene normally --------------------- //
 	// ------------------------------------------------------------------- // 
     glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 
 	// Draw to the screen  
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -289,15 +298,39 @@ void VCTApplication::draw() {
     projectionMatrix = camera_->getProjectionMatrix();
     
 	for(std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
-		//(*obj)->drawSimple(viewMatrix, projectionMatrix, shadowShader_);
 		(*obj)->draw(viewMatrix, projectionMatrix, depthViewProjectionMatrix, depthTexture_, voxelTexture_, standardShader_);
 	}
+
+	// clearVoxels();
 
 	// Draw voxels
 	//drawVoxels();
 
 	//drawTextureQuad(depthTexture_.textureID);
 	drawTextureQuad(voxelizationTexture_);
+}
+
+void VCTApplication::clearVoxels() {
+	glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, voxelTexture_.size, voxelTexture_.size);
+	
+	glUseProgram(clearVoxelsShader_);
+
+	glBindTexture(GL_TEXTURE_3D, voxelTexture_.textureID);
+    glBindImageTexture(0, voxelTexture_.textureID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glUniform1i(glGetUniformLocation(clearVoxelsShader_, "voxelTexture"), 0);
+    glUniform1i(glGetUniformLocation(clearVoxelsShader_, "voxelDimensions"), voxelTexture_.size);
+
+	glBindVertexArray(quadVertexArray_);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO_);
+	glVertexAttribPointer(0, 3,	GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDisableVertexAttribArray(0);
 }
 
 void VCTApplication::drawTextureQuad(GLuint textureID) {

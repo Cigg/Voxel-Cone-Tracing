@@ -24,6 +24,8 @@ void Controls::updateFromInputs(VCTApplication* app, float deltaTime) {
 	glm::dvec2 mouseDelta = mousePos - oldMousePos_;
 	oldMousePos_ = mousePos;
 
+
+
 	// Mouse cursor position isn't updated the first four frames.
 	// This is an ugly hack to wait until it is positioned in the middle
 	// of the screen

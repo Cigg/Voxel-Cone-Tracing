@@ -31,6 +31,7 @@ protected:
 	bool loadObject(std::string path, std::string name, glm::vec3 pos = glm::vec3(0.0f), float scale = 1.0f);
 	void drawTextureQuad(GLuint textureID);
 	void drawVoxels();
+	void clearVoxels();
 	
 	int width_, height_;
 	Camera* camera_;
@@ -56,8 +57,9 @@ protected:
 	GLuint voxelizationFramebuffer_;
     GLuint voxelizationTexture_; // Used to render voxelization step
     GLuint voxelizationShader_;
+    GLuint clearVoxelsShader_;
     Texture3D voxelTexture_;
-    const int voxelDimensions_ = 512;
+    const int voxelDimensions_ = 256;
     const float voxelGridWorldSize_ = 150.0f;
 
 	// Render voxels
