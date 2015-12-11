@@ -38,7 +38,6 @@ void main() {
     
     // For every vertex sent in vertices
     for(int i = 0;i < gl_in.length(); i++) {
-        vec3 middlePos = gl_in[0].gl_Position.xyz / 3.0 + gl_in[1].gl_Position.xyz / 3.0 + gl_in[2].gl_Position.xyz / 3.0;
         frag.UV = vertices[i].UV;
         frag.position_depth = vertices[i].position_depth;
         gl_Position = frag.projectionMatrix * gl_in[i].gl_Position;

@@ -64,7 +64,7 @@ protected:
     GLuint voxelizationShader_;
     GLuint clearVoxelsShader_;
     Texture3D voxelTexture_;
-    const int voxelDimensions_ = 256;
+    const int voxelDimensions_ = 512;
     const float voxelGridWorldSize_ = 150.0f;
 
 	// Render voxels

@@ -40,7 +40,9 @@ uniform vec2 MaskTextureSize;
 uniform vec2 HeightTextureSize;
 
 const int NUM_CONES = 6;
-const int MAX_STEPS = 20;
+const float MAX_DIST = 600.0;
+const float OCCLUSION_THRESH = 0.95;
+
 vec3 coneDirections[6] = vec3[](
                             vec3(0, 1, 0),
                             vec3(0, 0.5, 0.866025),
@@ -55,8 +57,9 @@ float coneWeights[6] = float[](0.25, 0.15, 0.15, 0.15, 0.15, 0.15);
 mat3 tangentToWorld;
 
 vec4 sampleVoxels(vec3 worldPosition, float lod) {
-    vec3 voxelTextureUV = worldPosition / VoxelGridWorldSize;
-    voxelTextureUV = voxelTextureUV + 0.5;
+    //vec3 offset = vec3(0.0, 1 / VoxelDimensions, 0.0);
+    vec3 voxelTextureUV = worldPosition / (VoxelGridWorldSize * 0.5);
+    voxelTextureUV = voxelTextureUV * 0.5 + 0.5;
 
     return textureLod(VoxelTexture, voxelTextureUV, lod);
 }
@@ -71,31 +74,29 @@ vec4 coneTrace(vec3 direction) {
     vec3 color = vec3(0);
     float alpha = 0.0;
 
-    float dist = VoxelGridWorldSize / VoxelDimensions;
-    for(int i = 0; i < MAX_STEPS; i++) {
+    float voxelWorldSize = VoxelGridWorldSize / VoxelDimensions;
+    float dist = 1.0 * voxelWorldSize; // Start one voxel away to avoid self occlusion
+    while(dist < MAX_DIST && alpha < OCCLUSION_THRESH) {
         // radius = tan(60) * dist
         float radius = sqrt(3) * dist;
-
-        // CALC LOD
-
-        vec4 voxelColor = sampleVoxels(Position_world + dist * direction, log2(2*radius * VoxelGridWorldSize / VoxelDimensions));
-        color += voxelColor.rgb;
-        alpha += voxelColor.a;
+        float lodLevel = log2(radius / voxelWorldSize);
+        vec4 voxelColor = sampleVoxels(Position_world + dist * direction, lodLevel);
+        color += (1.0 - alpha) * voxelColor.rgb;
+        alpha += (1.0 - alpha) * voxelColor.a;
         dist += radius * 2.0;
     }
 
     return vec4(color, alpha);
 }
 
-vec3 indirectLight() {
+vec4 indirectLight() {
     vec4 color = vec4(0);
 
     for(int i = 0; i < NUM_CONES; i++) {
         color += coneWeights[i] * coneTrace(tangentToWorld * coneDirections[i]);
     }
 
-    // Ghetto ambient occlusion
-    return vec3(1.0 - color.a * 0.5);
+    return color;
 }
 
 void main() {
@@ -118,7 +119,7 @@ void main() {
     float diffY = texture(HeightTexture, UV + vec2(0.0, offset.y)).r - curr;
 
     // Tangent space bump normal
-    float bumpMult = -3.0;
+    float bumpMult = -10.0;
     vec3 bumpNormal_tangent = normalize(vec3(bumpMult*diffX, 1.0, bumpMult*diffY));
 
     // Matrix to convert from tangent space to camera space
@@ -132,18 +133,19 @@ void main() {
     float cosTheta = max(0, dot(N, L));
 
     float visibility = texture(ShadowMap, vec3(Position_depth.xy, (Position_depth.z - 0.001)/Position_depth.w));
-    
+    visibility = 1.0;
+
     vec3 ambientLighting = 0.1 * materialColor.xyz;
     vec3 diffuseReflection = visibility * cosTheta * lightColor * materialColor.xyz;
     vec3 specularReflection = visibility * lightColor * specularColor.xyz * pow(max(0.0, dot(reflect(-L, N), E)), Shininess);
 
     tangentToWorld = inverse(transpose(mat3(Tangent_world, Normal_world, Bitangent_world)));
     
-    vec3 indirectReflection = indirectLight();
+    vec4 indirectReflection = indirectLight();
 
-    vec4 voxelColor = sampleVoxels(Position_world, 0.0);
-	//color = vec4(ambientLighting + diffuseReflection + specularReflection, alpha);
-    color = vec4(indirectReflection, alpha);
+	//color = vec4(occlusion*(ambientLighting + diffuseReflection + specularReflection), alpha);
+    //color = vec4(vec3(occlusion), alpha);
+    color = vec4(indirectReflection.rgb, alpha);
     //color = vec4(voxelColor.rgb, alpha);
     //color = vec4(voxelTextureUV, alpha);
     //color = vec4(vec3(visibility), 1.0);

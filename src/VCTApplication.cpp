@@ -141,10 +141,10 @@ bool VCTApplication::initialize() {
 	glGenTextures(1, &depthTexture_.textureID);
 	glBindTexture(GL_TEXTURE_2D, depthTexture_.textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, depthTexture_.width, depthTexture_.height, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
@@ -281,8 +281,8 @@ void VCTApplication::draw() {
 void VCTApplication::drawDepthTexture() {
 	glUseProgram(shadowShader_);
 	
-	//glEnable(GL_CULL_FACE);
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 
 	// Draw to depth frame buffer instead of screen
 	glBindFramebuffer(GL_FRAMEBUFFER, depthFramebuffer_);
@@ -310,9 +310,31 @@ void VCTApplication::voxelizeScene() {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // left, right, bottom, top, zNear, zFar
+    float size = voxelGridWorldSize_;
+    glm::mat4 projectionMatrix = glm::ortho(-size*0.5f, size*0.5f, -size*0.5f, size*0.5f, size*0.5f, size*1.5f);
+    glm::mat4 projX = projectionMatrix * glm::lookAt(glm::vec3(size, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    glm::mat4 projY = projectionMatrix * glm::lookAt(glm::vec3(0, size, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, -1));
+    glm::mat4 projZ = projectionMatrix * glm::lookAt(glm::vec3(0, 0, size), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    
+    glUniformMatrix4fv(glGetUniformLocation(voxelizationShader_, "projX"), 1, GL_FALSE, &projX[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(voxelizationShader_, "projY"), 1, GL_FALSE, &projY[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(voxelizationShader_, "projZ"), 1, GL_FALSE, &projZ[0][0]);
+
+    glActiveTexture(GL_TEXTURE0 + 10);
+	glBindTexture(GL_TEXTURE_2D, depthTexture_.textureID);
+	glUniform1i(glGetUniformLocation(voxelizationShader_, "ShadowMap"), 10);
+
+	// Bind single level of texture to image unit so we can write to it from shaders
+    glBindTexture(GL_TEXTURE_3D, voxelTexture_.textureID);
+    glBindImageTexture(0, voxelTexture_.textureID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glUniform1i(glGetUniformLocation(voxelizationShader_, "voxelTexture"), 0);
+
+    glUniform1i(glGetUniformLocation(voxelizationShader_, "voxelDimensions"), voxelTexture_.size);
+
 	for (std::vector<Object*>::iterator obj = objects_.begin(); obj != objects_.end(); ++obj) {
 		// Voxelizes scene and injects lighting in the same step. Lighting can be deferred to avoid unnecesarry shading.
-		(*obj)->drawTo3DTexture(voxelizationShader_, voxelTexture_, depthTexture_, voxelGridWorldSize_, depthViewProjectionMatrix_);
+		(*obj)->drawTo3DTexture(voxelizationShader_, depthViewProjectionMatrix_);
 	}
 
 	// glGenerateMipmap is too slow
@@ -334,7 +356,7 @@ void VCTApplication::drawScene() {
 	glUseProgram(standardShader_);
 
 	glEnable(GL_CULL_FACE);
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 
 	// Draw to the screen  
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
