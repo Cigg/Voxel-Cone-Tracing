@@ -130,14 +130,6 @@ void Mesh::loadAssimpMesh(const aiMesh* mesh) {
 }
 
 void Mesh::draw() {
-	// std::cout << "Mesh::draw: " << std::endl <<
-	// 			 "   " << "vertexArray_: " << vertexArray_ << std::endl <<
-	// 			 "   " << "vboVertices_: " << vboVertices_ << std::endl <<
-	// 			 "   " << "vboTexCoords_: " << vboTexCoords_ << std::endl <<
-	// 			 "   " << "vboNormals_: " << vboNormals_ << std::endl <<
-	// 			 "   " << "vboIndices_: " << vboIndices_ << std::endl <<
-	// 			 "   " << " numIndices_: " << numIndices_ << std::endl;
-
 	glBindVertexArray(vertexArray_);
 
 	// 1rst attribute buffer : vertices
@@ -219,6 +211,5 @@ void Mesh::draw() {
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4);
 
-	glUseProgram(0);
 	glBindVertexArray(0);
 }

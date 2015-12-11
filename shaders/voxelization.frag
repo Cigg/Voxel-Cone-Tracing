@@ -9,7 +9,7 @@ in fData {
     vec4 position_depth; // Position from the shadow map point of view
 } frag;
 
-out vec4 color;
+//out vec4 color;
 uniform layout(RGBA8) image3D voxelTexture;
 uniform sampler2D DiffuseTexture;
 uniform sampler2DShadow ShadowMap;
@@ -37,7 +37,7 @@ void main() {
 
 	texPos.z = voxelDimensions - texPos.z - 1;
 
-	color = vec4(texPos / float(voxelDimensions), 1.0);
+	//color = vec4(texPos / float(voxelDimensions), 1.0);
     //imageStore(voxelTexture, texPos, vec4(materialColor.rgb * visibility, materialColor.a));
     imageStore(voxelTexture, texPos, materialColor);
 }
