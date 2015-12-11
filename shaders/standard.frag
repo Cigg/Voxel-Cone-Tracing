@@ -2,7 +2,10 @@
 
 // Interpolated values from the vertex shaders
 in vec2 UV;
-in vec3 voxelTextureUV;
+in vec3 Position_world;
+in vec3 Normal_world;
+in vec3 Tangent_world;
+in vec3 Bitangent_world;
 in vec3 Normal_cam;
 in vec3 Tangent_cam;
 in vec3 Bitangent_cam;
@@ -26,12 +29,74 @@ uniform sampler2D SpecularTexture;
 uniform sampler2D MaskTexture;
 uniform sampler2D HeightTexture;
 uniform sampler2DShadow ShadowMap;
+
 uniform sampler3D VoxelTexture;
+uniform float VoxelGridWorldSize;
+uniform int VoxelDimensions;
 
 uniform vec2 DiffuseTextureSize;
 uniform vec2 SpecularTextureSize;
 uniform vec2 MaskTextureSize;
 uniform vec2 HeightTextureSize;
+
+const int NUM_CONES = 6;
+const int MAX_STEPS = 20;
+vec3 coneDirections[6] = vec3[](
+                            vec3(0, 1, 0),
+                            vec3(0, 0.5, 0.866025),
+                            vec3(0.823639, 0.5, 0.267617),
+                            vec3(0.509037, 0.5, -0.700629),
+                            vec3(-0.509037, 0.5, -0.700629),
+                            vec3(-0.823639, 0.5, 0.267617)
+                            );
+
+float coneWeights[6] = float[](0.25, 0.15, 0.15, 0.15, 0.15, 0.15);
+
+mat3 tangentToWorld;
+
+vec4 sampleVoxels(vec3 worldPosition, float lod) {
+    vec3 voxelTextureUV = worldPosition / VoxelGridWorldSize;
+    voxelTextureUV = voxelTextureUV + 0.5;
+
+    return textureLod(VoxelTexture, voxelTextureUV, lod);
+}
+
+vec4 coneTrace(vec3 direction) {
+
+    // Returns the lod level that will be used if the texture is sampled automatically (with texture(..) )
+    //float lodLevel = textureQueryLod(VoxelTexture, voxelTextureUV).x;
+    // level 0 mipmap is full size, level 1 is half that size and so on
+
+    float lod = 0.0;
+    vec3 color = vec3(0);
+    float alpha = 0.0;
+
+    float dist = VoxelGridWorldSize / VoxelDimensions;
+    for(int i = 0; i < MAX_STEPS; i++) {
+        // radius = tan(60) * dist
+        float radius = sqrt(3) * dist;
+
+        // CALC LOD
+
+        vec4 voxelColor = sampleVoxels(Position_world + dist * direction, log2(2*radius * VoxelGridWorldSize / VoxelDimensions));
+        color += voxelColor.rgb;
+        alpha += voxelColor.a;
+        dist += radius * 2.0;
+    }
+
+    return vec4(color, alpha);
+}
+
+vec3 indirectLight() {
+    vec4 color = vec4(0);
+
+    for(int i = 0; i < NUM_CONES; i++) {
+        color += coneWeights[i] * coneTrace(tangentToWorld * coneDirections[i]);
+    }
+
+    // Ghetto ambient occlusion
+    return vec3(1.0 - color.a * 0.5);
+}
 
 void main() {
 	vec4 materialColor = texture(DiffuseTexture, UV);
@@ -39,10 +104,6 @@ void main() {
 		discard;
 	}
 
-	// Returns the lod level that will be used if the texture is sampled automatically (with texture(..) )
-	float lodLevel = textureQueryLod(VoxelTexture, voxelTextureUV).x;
-    // level 0 mipmap is full size, level 1 is half that size and so on
-    vec4 voxelColor = textureLod(VoxelTexture, voxelTextureUV, lodLevel*2);
 	float alpha = materialColor.a;
 
 	vec3 lightColor = vec3(1.0);
@@ -58,10 +119,10 @@ void main() {
 
     // Tangent space bump normal
     float bumpMult = -3.0;
-    vec3 bumpNormal_tangent = normalize(vec3(bumpMult*diffX, bumpMult*diffY, 1.0));
+    vec3 bumpNormal_tangent = normalize(vec3(bumpMult*diffX, 1.0, bumpMult*diffY));
 
     // Matrix to convert from tangent space to camera space
-    mat3 tangentToCam = inverse(transpose(mat3(Tangent_cam, Bitangent_cam, Normal_cam)));
+    mat3 tangentToCam = inverse(transpose(mat3(Tangent_cam, Normal_cam, Bitangent_cam)));
 
     // Camera space normal, light direction and eye direction
     vec3 N = normalize(tangentToCam * bumpNormal_tangent);
@@ -76,7 +137,13 @@ void main() {
     vec3 diffuseReflection = visibility * cosTheta * lightColor * materialColor.xyz;
     vec3 specularReflection = visibility * lightColor * specularColor.xyz * pow(max(0.0, dot(reflect(-L, N), E)), Shininess);
 
-	color = vec4(ambientLighting + diffuseReflection + specularReflection, alpha);
+    tangentToWorld = inverse(transpose(mat3(Tangent_world, Normal_world, Bitangent_world)));
+    
+    vec3 indirectReflection = indirectLight();
+
+    vec4 voxelColor = sampleVoxels(Position_world, 0.0);
+	//color = vec4(ambientLighting + diffuseReflection + specularReflection, alpha);
+    color = vec4(indirectReflection, alpha);
     //color = vec4(voxelColor.rgb, alpha);
     //color = vec4(voxelTextureUV, alpha);
     //color = vec4(vec3(visibility), 1.0);

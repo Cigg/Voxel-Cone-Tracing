@@ -198,32 +198,33 @@ bool VCTApplication::initialize() {
     glBindTexture(GL_TEXTURE_3D, voxelTexture_.textureID);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 3); // Mipmap levels. Goes all the way to a 1 x 1 texture if not set
+	//glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+	//glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 3); // Mipmap levels. Goes all the way to a 1 x 1 texture if not set
 
-	// Fill 3D texture with empty values (not needed for glTexImage3D)
-	//int numVoxels = voxelTexture_.size * voxelTexture_.size * voxelTexture_.size;
-	//GLubyte* data = new GLubyte[numVoxels*4];
-	//for(int i = 0; i < voxelTexture_.size ; i++) {
-	//	for(int j = 0; j < voxelTexture_.size ; j++) {
-	//		for(int k = 0; k < voxelTexture_.size ; k++) {
-	//			data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size)] = 0;
-	//			data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size) + 1] = 0;
-	//			data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size) + 2] = 0;
-	//			data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size) + 3] = 0;
-	//		}
-	//	}
-	//}
+	//Fill 3D texture with empty values (not needed for glTexImage3D)
+	int numVoxels = voxelTexture_.size * voxelTexture_.size * voxelTexture_.size;
+	GLubyte* data = new GLubyte[numVoxels*4];
+	for(int i = 0; i < voxelTexture_.size ; i++) {
+		for(int j = 0; j < voxelTexture_.size ; j++) {
+			for(int k = 0; k < voxelTexture_.size ; k++) {
+				data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size)] = 0;
+				data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size) + 1] = 0;
+				data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size) + 2] = 0;
+				data[4*(i + j * voxelTexture_.size + k * voxelTexture_.size * voxelTexture_.size) + 3] = 0;
+			}
+		}
+	}
 
 	// Option 1: Texture storage
 	//glTexStorage3D(GL_TEXTURE_3D, 3, GL_RGBA8, voxelTexture_.size, voxelTexture_.size, voxelTexture_.size);
 	//glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, voxelTexture_.size, voxelTexture_.size, voxelTexture_.size, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	//delete[] data;
 
 	// Option 2: Texture image
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, voxelTexture_.size, voxelTexture_.size, voxelTexture_.size, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, voxelTexture_.size, voxelTexture_.size, voxelTexture_.size, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	delete[] data;
 	
-	glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST); // GL_FASTEST, GL_NICEST, GL_DONT_CARE
+	//glHint(GL_GENERATE_MIPMAP_HINT, GL_FASTEST); // GL_FASTEST, GL_NICEST, GL_DONT_CARE
 	glGenerateMipmap(GL_TEXTURE_3D); // Allocate mipmaps
 
 	// Voxelize once here instead of for every frame for now.
@@ -344,6 +345,8 @@ void VCTApplication::drawScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUniform3f(glGetUniformLocation(standardShader_, "LightDirection"), lightDirection_.x, lightDirection_.y, lightDirection_.z);
+	glUniform1f(glGetUniformLocation(standardShader_, "VoxelGridWorldSize"), voxelGridWorldSize_);
+	glUniform1i(glGetUniformLocation(standardShader_, "VoxelDimensions"), voxelDimensions_);
 
 	// Bind depth texture
 	glActiveTexture(GL_TEXTURE0 + 10);
