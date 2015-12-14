@@ -26,12 +26,15 @@ public:
 	bool initialize();
 	void update(float deltaTime);
 	void draw();
+	bool showDiffuse = true, showIndirectDiffuse = true, showIndirectSpecular = true, showAmbientOcculision = true;
 
 protected:
 	bool loadObject(std::string path, std::string name, glm::vec3 pos = glm::vec3(0.0f), float scale = 1.0f);
 	void drawTextureQuad(GLuint textureID);
 	void drawVoxels();
 	void clearVoxels();
+	void drawDepthTexture();
+	void voxelizeScene();
 	
 	int width_, height_;
 	Camera* camera_;
@@ -44,6 +47,7 @@ protected:
 	GLuint standardShader_;
 
 	const float sponzaScale_ = 0.05f;
+	glm::vec3 lightDirection_ = glm::vec3(-0.3, 0.9, -0.25);
 
 	// Stuff for shadow mapping
 	GLuint depthFramebuffer_;
@@ -52,6 +56,7 @@ protected:
 	GLuint quadShader_;
 	GLuint quadVertexArray_;
 	GLuint quadVBO_;
+	glm::mat4 depthViewProjectionMatrix_;
 
 	// Voxelization
 	GLuint voxelizationFramebuffer_;

@@ -38,6 +38,6 @@ void main() {
 	texPos.z = voxelDimensions - texPos.z - 1;
 
 	color = vec4(texPos / float(voxelDimensions), 1.0);
-    //imageStore(voxelTexture, texPos, vec4(materialColor.rgb * visibility, materialColor.a));
-    imageStore(voxelTexture, texPos, materialColor);
+    imageStore(voxelTexture, texPos, vec4(materialColor.rgb * visibility, 1.0));
+    //imageStore(voxelTexture, texPos, materialColor);
 }

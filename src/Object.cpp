@@ -59,11 +59,11 @@ void Object::draw(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, glm::mat4 
 }
 
 // This is a bit stupid. Make drawing of objects more general somehow
-void Object::drawSimple(glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix, GLuint shader) {
+void Object::drawSimple(glm::mat4 &depthViewProjectionMatrix, GLuint shader) {
 	glUseProgram(shader);
 
 	glm::mat4 modelMatrix = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(scale_)), position_);
-	glm::mat4 modelViewProjectionMatrix = projectionMatrix * viewMatrix * modelMatrix;
+	glm::mat4 modelViewProjectionMatrix = depthViewProjectionMatrix * modelMatrix;
 	glUniformMatrix4fv(glGetUniformLocation(shader, "ModelViewProjectionMatrix"), 1, GL_FALSE, &modelViewProjectionMatrix[0][0]);
 
 	mesh_->draw();
