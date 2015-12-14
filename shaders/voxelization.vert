@@ -17,7 +17,7 @@ out vData {
 void main() {
     vert.UV = vertexUV;
     vert.position_depth = DepthModelViewProjectionMatrix * vec4(vertexPosition_model, 1);
-	vert.position_depth.xyz = vert.position_depth.xyz * 0.5f + 0.5f;
+	vert.position_depth.xyz = vert.position_depth.xyz * 0.5 + 0.5;;
 
     gl_Position = ModelMatrix * vec4(vertexPosition_model,1);
 }

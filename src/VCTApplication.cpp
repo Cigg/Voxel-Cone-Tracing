@@ -228,6 +228,7 @@ bool VCTApplication::initialize() {
 	glGenerateMipmap(GL_TEXTURE_3D); // Allocate mipmaps
 
 	// Voxelize once here instead of for every frame for now.
+	drawDepthTexture();
 	voxelizeScene();
     
     // ------------------------------------------------------------------- //

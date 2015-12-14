@@ -83,7 +83,7 @@ vec4 coneTrace(vec3 direction) {
         vec4 voxelColor = sampleVoxels(Position_world + dist * direction, lodLevel);
         color += (1.0 - alpha) * voxelColor.rgb;
         alpha += (1.0 - alpha) * voxelColor.a;
-        dist += radius * 2.0;
+        dist += radius * 1.0;
     }
 
     return vec4(color, alpha);
@@ -133,7 +133,7 @@ void main() {
     float cosTheta = max(0, dot(N, L));
 
     float visibility = texture(ShadowMap, vec3(Position_depth.xy, (Position_depth.z - 0.001)/Position_depth.w));
-    visibility = 1.0;
+    //visibility = 1.0;
 
     vec3 ambientLighting = 0.1 * materialColor.xyz;
     vec3 diffuseReflection = visibility * cosTheta * lightColor * materialColor.xyz;
@@ -142,6 +142,7 @@ void main() {
     tangentToWorld = inverse(transpose(mat3(Tangent_world, Normal_world, Bitangent_world)));
     
     vec4 indirectReflection = indirectLight();
+    float occlusion = 1.0 - indirectReflection.a;
 
 	//color = vec4(occlusion*(ambientLighting + diffuseReflection + specularReflection), alpha);
     //color = vec4(vec3(occlusion), alpha);
