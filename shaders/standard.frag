@@ -148,7 +148,7 @@ void main() {
     // Variables for direct light
     vec4 specularColor = texture(SpecularTexture, UV);
     specularColor = length(specularColor.gb) > 0.0 ? specularColor : specularColor.rrra;
-    float shininess = pow(max(0.0, dot(reflect(-L, N), E)), 2.0);
+    float shininess = pow(max(0.0, dot(reflect(-L, N), E)), 0.5);
     float cosTheta = max(0, dot(N, L));
     vec3 lightColor = vec3(1.0);
     float alpha = materialColor.a; // Is the alpha variable used?
@@ -167,12 +167,12 @@ void main() {
     vec4 indirectReflection =  indirectLight(occlusion);
     vec3 indirectDiffuseLight = showIndirectDiffuse > 0.5 ? 6.0 * indirectReflection.rgb : vec3(0.0);
     float occlusionThresh = 0.25;
-    occlusion = showAmbientOcculision > 0.5 ? smoothstep(0.0, 1.0 - occlusionThresh, occlusion) : 1.0;
+    //occlusion = showAmbientOcculision > 0.5 ? smoothstep(0.0, 1.0 - occlusionThresh, occlusion) : 1.0;
     vec3 diffuseReflection = occlusion * (diffuseLight + indirectDiffuseLight) * materialColor.rgb;
     
     float specularOcclusion;
-    vec4 tracedSpecular = coneTrace(reflectDir, 0.15, specularOcclusion);
-    vec3 specularReflection = showIndirectSpecular > 0.5 ? 2.0 * specularOcclusion * tracedSpecular.rgb * shininess : vec3(0.0); // tan(30) = 1/sqrt(3)
+    vec4 tracedSpecular = coneTrace(reflectDir, 0.2, specularOcclusion);
+    vec3 specularReflection = showIndirectSpecular > 0.5 ? 6.0 * specularOcclusion * specularColor.rgb * tracedSpecular.rgb * shininess: vec3(0.0); // tan(30) = 1/sqrt(3)
 
     //color = vec4(occlusion*(ambientLighting + diffuseReflection + specularReflection), alpha);
     //color = vec4(vec3(occlusion), alpha);
