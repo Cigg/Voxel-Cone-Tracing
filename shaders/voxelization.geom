@@ -19,9 +19,9 @@ out fData {
     vec4 position_depth;
 } frag;
 
-uniform mat4 projX;
-uniform mat4 projY;
-uniform mat4 projZ;
+uniform mat4 ProjX;
+uniform mat4 ProjY;
+uniform mat4 ProjZ;
 
 void main() {
     vec3 p1 = gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz;
@@ -34,7 +34,7 @@ void main() {
 
     // 0 = x axis dominant, 1 = y axis dominant, 2 = z axis dominant
     frag.axis = (nDotX >= nDotY && nDotX >= nDotZ) ? 1 : (nDotY >= nDotX && nDotY >= nDotZ) ? 2 : 3;
-    frag.projectionMatrix = frag.axis == 1 ? projX : frag.axis == 2 ? projY : projZ;
+    frag.projectionMatrix = frag.axis == 1 ? ProjX : frag.axis == 2 ? ProjY : ProjZ;
     
     // For every vertex sent in vertices
     for(int i = 0;i < gl_in.length(); i++) {

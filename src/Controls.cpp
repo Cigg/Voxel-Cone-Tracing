@@ -15,7 +15,6 @@ Controls::~Controls() {
 }
 
 void Controls::updateFromInputs(VCTApplication* app, float deltaTime) {
-	//std::cout << "controls deltaTime: " << deltaTime << std::endl;
 	GLFWwindow* window = app->getWindow();
 	Camera* camera = app->getCamera();
 
@@ -23,8 +22,6 @@ void Controls::updateFromInputs(VCTApplication* app, float deltaTime) {
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
 	glm::dvec2 mouseDelta = mousePos - oldMousePos_;
 	oldMousePos_ = mousePos;
-
-
 
 	// Mouse cursor position isn't updated the first four frames.
 	// This is an ugly hack to wait until it is positioned in the middle

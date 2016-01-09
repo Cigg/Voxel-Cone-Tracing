@@ -9,35 +9,38 @@ in fData {
     vec4 position_depth; // Position from the shadow map point of view
 } frag;
 
-out vec4 color;
-uniform layout(RGBA8) image3D voxelTexture;
+uniform layout(RGBA8) image3D VoxelTexture;
 uniform sampler2D DiffuseTexture;
 uniform sampler2DShadow ShadowMap;
-uniform int voxelDimensions;
+uniform int VoxelDimensions;
 
 void main() {
-	// Material color texture lookup and check if position voxel is shadowed widh the shadow map
     vec4 materialColor = texture(DiffuseTexture, frag.UV);
+
+    // Do shadow map lookup here
+    // TODO: Splat photons onto the voxels at a later stage using a separate shader
     float visibility = texture(ShadowMap, vec3(frag.position_depth.xy, (frag.position_depth.z - 0.001)/frag.position_depth.w));
 
-	ivec3 camPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, voxelDimensions * gl_FragCoord.z);
+	ivec3 camPos = ivec3(gl_FragCoord.x, gl_FragCoord.y, VoxelDimensions * gl_FragCoord.z);
 	ivec3 texPos;
 	if(frag.axis == 1) {
-	    texPos.x = voxelDimensions - camPos.z;
+	    texPos.x = VoxelDimensions - camPos.z;
 		texPos.z = camPos.x;
 		texPos.y = camPos.y;
 	}
 	else if(frag.axis == 2) {
 	    texPos.z = camPos.y;
-		texPos.y = voxelDimensions - camPos.z;
+		texPos.y = VoxelDimensions - camPos.z;
 		texPos.x = camPos.x;
 	} else {
 	    texPos = camPos;
 	}
 
-	texPos.z = voxelDimensions - texPos.z - 1;
+	// Flip it!
+	texPos.z = VoxelDimensions - texPos.z - 1;
 
-	color = vec4(texPos / float(voxelDimensions), 1.0);
-    imageStore(voxelTexture, texPos, vec4(materialColor.rgb * visibility, 1.0));
-    //imageStore(voxelTexture, texPos, materialColor);
+	// Overwrite currently stored value.
+	// TODO: Atomic operations to get an averaged value, described in OpenGL insights about voxelization
+	// Required to avoid flickering when voxelizing every frame
+    imageStore(VoxelTexture, texPos, vec4(materialColor.rgb * visibility, 1.0));
 }

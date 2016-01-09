@@ -11,9 +11,8 @@
 
 #include "VCTApplication.h"
 
-const int width_ = 1024;
-const int height_ = 768;
-bool press1 = false, press2 = false, press3 = false, press4 = false;
+const int width_ = 1280;
+const int height_ = 720;
 
 void dumpGLInfo() {
     printf ("Vendor: %s\n", glGetString(GL_VENDOR));
@@ -104,37 +103,6 @@ int main(void) {
     while (glfwWindowShouldClose(window) == false) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-
-        // bool showDiffuse = false, showIndirectDiffuse = false, showIndirectSpecular = false, showAmbientOcculision = false;
-        if (!press1 && glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-            app.showDiffuse = !app.showDiffuse;
-            press1 = true;
-        }
-        if (!press2 && glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-            app.showIndirectDiffuse = !app.showIndirectDiffuse;
-            press2 = true;
-        }
-        if (!press3 && glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-            app.showIndirectSpecular = !app.showIndirectSpecular;
-            press3 = true;
-        }
-        if (!press4 && glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
-            app.showAmbientOcculision = !app.showAmbientOcculision;
-            press4 = true;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
-            press1 = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
-            press2 = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
-            press3 = false;
-        }
-        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_RELEASE) {
-            press4 = false;
-        }
 
         // Update timer
         currentTime = glfwGetTime();

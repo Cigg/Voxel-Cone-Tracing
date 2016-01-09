@@ -21,13 +21,11 @@ Camera::~Camera() {
 }
 
 void Camera::update() {
-	//std::cout << "camera position: " << position_.x << "," << position_.y << "," << position_.z << std::endl;
 	// Update camera coordinate system vectors
 	front_.x = cos(yaw_) * cos(pitch_);
 	front_.y = sin(pitch_);
 	front_.z = sin(yaw_) * cos(pitch_);
 	front_ = glm::normalize(front_);
-	//std::cout << "camera direction: " << front_.x << "," << front_.y << "," << front_.z << std::endl;
 	right_ = glm::normalize(glm::cross(front_, worldUpVector_));
 	up_ = glm::normalize(glm::cross(right_, front_));
 

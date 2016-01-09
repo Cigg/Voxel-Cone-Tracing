@@ -25,14 +25,13 @@ public:
 
 	bool initialize();
 	void update(float deltaTime);
+	void updateInput();
 	void draw();
-	bool showDiffuse = true, showIndirectDiffuse = true, showIndirectSpecular = true, showAmbientOcculision = true;
 
 protected:
 	bool loadObject(std::string path, std::string name, glm::vec3 pos = glm::vec3(0.0f), float scale = 1.0f);
 	void drawTextureQuad(GLuint textureID);
 	void drawVoxels();
-	void clearVoxels();
 	void drawDepthTexture();
 	void voxelizeScene();
 	
@@ -53,24 +52,27 @@ protected:
 	GLuint depthFramebuffer_;
 	Texture2D depthTexture_;
 	GLuint shadowShader_;
-	GLuint quadShader_;
-	GLuint quadVertexArray_;
-	GLuint quadVBO_;
 	glm::mat4 depthViewProjectionMatrix_;
 
 	// Voxelization
-	GLuint voxelizationFramebuffer_;
-    GLuint voxelizationTexture_; // Used to render voxelization step
     GLuint voxelizationShader_;
-    GLuint clearVoxelsShader_;
     Texture3D voxelTexture_;
     const int voxelDimensions_ = 256;
     const float voxelGridWorldSize_ = 150.0f;
+    glm::mat4 projX_, projY_, projZ_;
 
 	// Render voxels
-	//GLuint texture3D_;
 	GLuint renderVoxelsShader_;
 	GLuint texture3DVertexArray_;
+
+	// Render texture debug
+	GLuint quadShader_;
+	GLuint quadVertexArray_;
+	GLuint quadVBO_;
+
+	// Inputs
+	bool press1_ = false, press2_ = false, press3_ = false, press4_ = false;
+	bool showDiffuse_ = true, showIndirectDiffuse_ = true, showIndirectSpecular_ = true, showAmbientOcculision_ = true;
 };
 
 #endif // VCTAPPLICATION_H
