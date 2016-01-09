@@ -5,6 +5,7 @@
 #include <assimp/scene.h>
 
 #include "Shader.h"
+#include "HighResClock.h"
 #include "VCTApplication.h"
 
 VCTApplication::VCTApplication(const int width, const int height, GLFWwindow* window) {
@@ -266,11 +267,18 @@ void VCTApplication::updateInput() {
 void VCTApplication::draw() {
 	//drawDepthTexture();
 
-    //voxelizeScene();
+	//auto start = timer::HighResClock::now();
+
+	//voxelizeScene();
+
+	//auto stop = timer::HighResClock::now();
+	//auto time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+	//std::cout << "voxelize total: " << time << std::endl;
 
 	// ------------------------------------------------------------------- // 
 	// --------------------- Draw the scene normally --------------------- //
-	// ------------------------------------------------------------------- // 
+	// ------------------------------------------------------------------- //
+
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
@@ -364,7 +372,7 @@ void VCTApplication::voxelizeScene() {
         (*obj)->drawTo3DTexture(voxelizationShader_, depthViewProjectionMatrix_);
     }
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE6);
 	glBindTexture(GL_TEXTURE_3D, voxelTexture_.textureID);
     glGenerateMipmap(GL_TEXTURE_3D);
 

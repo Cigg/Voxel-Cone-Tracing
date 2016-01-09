@@ -1,7 +1,9 @@
 # Voxel Cone Tracing
+Project in TSBK03 - Advanced Game Programming, at Linköping University.
+
 Interactive Indirect Illumination Using Voxel Cone Tracing based on [this article](https://research.nvidia.com/sites/default/files/publications/GIVoxels-pg2011-authors.pdf)
 
-Project in TSBK03 - Advanced Game Programming, at Linköping University.
+The scene is voxelized and stored in a 3D texture. The voxelized scene representation is "cone traced" in the final rendering step to get indirect light in the scene.
 
 ## Project members
 [Oscar Westberg](http://oscarwestberg.github.io)  
@@ -38,7 +40,10 @@ Now generate a project or makefile for your platform
 
 ## TODO
 * Conservative voxelization
+* Atomic operations for image writing to get an averaged voxel value
 * Better mipmapping (faster + anisotropic)
 * Light injection like in the article
 * Dynamic objects
 * Maybe sparse voxel octree someday
+
+![](https://github.com/Cigg/Voxel-Cone-Tracing/raw/master/vct2.jpg "vct")

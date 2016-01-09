@@ -164,7 +164,7 @@ void main() {
         vec3 directDiffuseLight = ShowDiffuse > 0.5 ? vec3(visibility * cosTheta) : vec3(0.0);
 
         // Indirect diffuse light
-        float occlusion = 0.0;
+		float occlusion = 0.0;
         vec3 indirectDiffuseLight = indirectLight(occlusion).rgb;
         indirectDiffuseLight = ShowIndirectDiffuse > 0.5 ? 4.0 * indirectDiffuseLight : vec3(0.0);
 
@@ -188,7 +188,5 @@ void main() {
         specularReflection = ShowIndirectSpecular > 0.5 ? 2.0 * specularColor.rgb * tracedSpecular.rgb : vec3(0.0);
     }
 
-    //color = vec4(tracedSpecular.rgb, alpha);
-    //color = vec4(vec3(occlusion), alpha);
     color = vec4(diffuseReflection + specularReflection, alpha);
 }

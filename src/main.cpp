@@ -13,6 +13,7 @@
 
 const int width_ = 1280;
 const int height_ = 720;
+float timer = 0.0;
 
 void dumpGLInfo() {
     printf ("Vendor: %s\n", glGetString(GL_VENDOR));
@@ -94,7 +95,7 @@ int main(void) {
     previousTime = glfwGetTime();
 
     VCTApplication app(width_, height_, window);
-    if(!app.initialize()) {
+    if (!app.initialize()) {
         fprintf(stderr, "Failed to initialize TestApplication\n");
         return EXIT_FAILURE;
     }
@@ -108,6 +109,14 @@ int main(void) {
         currentTime = glfwGetTime();
         float deltaTime = float(currentTime - previousTime);
         previousTime = currentTime;
+
+		if (timer > 2.0) {
+			std::cout << "FPS: " << 1.0 / deltaTime << std::endl;
+			timer = 0.0;
+		}
+		else {
+			timer += deltaTime;
+		}
         
         app.update(deltaTime);
         app.draw();
