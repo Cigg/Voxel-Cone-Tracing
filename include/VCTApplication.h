@@ -57,7 +57,7 @@ protected:
 	// Voxelization
     GLuint voxelizationShader_;
     Texture3D voxelTexture_;
-    const int voxelDimensions_ = 256;
+    const int voxelDimensions_ = 512;
     const float voxelGridWorldSize_ = 150.0f;
     glm::mat4 projX_, projY_, projZ_;
 
